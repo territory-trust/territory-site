@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Оплата — Территория доверия и поддержки</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+
+  <div class="wrap pay">
+<div class="card">
+      <h1>Оплата помощи</h1>
+      <div class="sub">
+        Линия: <span class="pill" id="linePill">—</span>
+        &nbsp;|&nbsp; Сумма к отправке: <b id="sumText">—</b>
+      </div>
+
+      <!-- Получатель №1 -->
+      <div class="box">
+        <div class="row topRow">
+  <div class="kv">
+    <div class="k">Получатель (№1 в очереди)</div>
+    <div class="v" id="toNick"></div>
+  </div>
+
+  <div class="kv cardTop">
+    <div class="k">Номер карты</div>
+
+    <div class="card-row">
+      <div class="v" id="toCard"></div>
+
+      <button id="copyCardBtn" type="button" class="copy-mini" title="Скопировать номер карты">COPY</button>
+    </div>
+
+    <div class="copy-msg" id="copyMsg"></div>
+  </div>
+</div>    
+        
+<!-- инструкция -->
+<div class="box">
+  <div class="note">
+    <div class="noteTitle">Инструкция по оплате</div>
+    <ol class="steps">
+      <li>Переведите сумму на карту участника №1 (получателя).</li>
+      <li>В назначении платежа укажите: <b>«Помощь»</b>.</li>
+      <li>После оплаты прикрепите скриншот квитанции для подтверждения.</li>
+    </ol>
+  </div>
+</div>
+
+        
+      </div>
+
+      <!-- Скрин -->
+<div class="box">
+
+  <label class="file-btn" for="receiptFile">📎 Прикрепить квитанцию</label>
+  <input type="file" id="receiptFile" accept="image/*" hidden>
+
+  <div id="fileName" class="file-name"></div>
+</div>
+
+<!-- Ярлык -->
+<div class="box">
+  <div class="checkRow">
+    <input id="shortcutChk" type="checkbox">
+    <label for="shortcutChk">Создать ярлык на рабочий стол</label>
+  </div>
+</div>
+
+      <!-- Уведомления -->
+      <div class="box">
+        <div class="checkRow">
+          <input id="notifyChk" type="checkbox" />
+          <div>
+            <div>🔔 Включить уведомления о подтверждении помощи и движении очереди</div>
+            
+
+           </div>
+        </div>
+      </div>
+
+      <!-- Действия -->
+      <button class="btn-main" id="sentBtn" disabled>Помощь отправлена - Далее</button>
+      <button class="btn-secondary" onclick="history.back()">Назад</button>
+
+      <div class="note" id="resultMsg" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // ====== COPY карты ======
+  const copyBtn = document.getElementById("copyCardBtn");
+  const card = document.getElementById("toCard");
+
+  if (copyBtn && card) {
+    copyBtn.addEventListener("click", async () => {
+      const text = card.textContent.replace(/\s+/g, " ").trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        const old = copyBtn.textContent;
+        copyBtn.textContent = "OK";
+        setTimeout(() => copyBtn.textContent = old, 900);
+      } catch (e) {
+        alert("Не удалось скопировать. Скопируй вручную.");
+      }
+    });
+  }
+
+  // ====== FILE + имя файла + активация "Я отправил помощь" ======
+  const fileInput = document.getElementById("receiptFile");
+  const nameBox   = document.getElementById("fileName");
+  const sentBtn   = document.getElementById("sentBtn");
+  const notifyChk = document.getElementById("notifyChk");
+
+  function refreshSentBtn() {
+    const hasFile = !!(fileInput && fileInput.files && fileInput.files.length > 0);
+    const notifyOk = !notifyChk || notifyChk.checked; // если чекбокса нет — считаем ок
+    if (sentBtn) sentBtn.disabled = !(hasFile && notifyOk);
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", () => {
+      if (nameBox) nameBox.textContent = fileInput.files[0] ? fileInput.files[0].name : "Файл не выбран.";
+      refreshSentBtn();
+    });
+  }
+
+  if (notifyChk) notifyChk.addEventListener("change", refreshSentBtn);
+
+  refreshSentBtn();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1. Читаем линию из URL или localStorage
+  const params = new URLSearchParams(location.search);
+  const lineFromUrl = params.get("line");
+
+  if (lineFromUrl) {
+    localStorage.setItem("line", lineFromUrl);
+  }
+
+  const line = localStorage.getItem("line") || "50";
+
+  // 2. Данные участников по линиям
+  const firstByLine = {
+    "10":  { nick: "Олена", card: "5375 1234 5678 1234" },
+    "50":  { nick: "Вадим", card: "4441 2222 3333 2222" },
+    "100": { nick: "Анна",  card: "5375 5555 6666 5555" }
+  };
+
+  const first = firstByLine[line] || firstByLine["50"];
+
+  // 3. Подставляем в интерфейс
+  document.getElementById("linePill").textContent = line;
+  document.getElementById("sumText").textContent = line + " грн";
+
+  document.getElementById("toNick").textContent = first.nick;
+  document.getElementById("toCard").textContent = first.card;
+
+});
+</script>
+</div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const receipt = document.getElementById("receiptFile");
+  const notify  = document.getElementById("notifyChk");
+  const btn     = document.getElementById("sentBtn");
+  const notifyRow = notify.closest(".checkRow");
+
+  // стартовое состояние
+  btn.classList.add("waiting");
+
+  // 1. Прикрепили квитанцию
+  receipt.addEventListener("change", () => {
+    if (receipt.files.length > 0) {
+      btn.classList.remove("waiting");
+      btn.classList.add("ready");
+      btn.disabled = false;
+    }
+  });
+
+  // 2. Клик по кнопке без уведомлений
+  btn.addEventListener("click", (e) => {
+    if (!notify.checked) {
+      e.preventDefault();
+      notifyRow.classList.add("attention");
+      setTimeout(() => notifyRow.classList.remove("attention"), 2500);
+    }
+  });
+
+  // 3. Включили уведомления → кнопка активна
+  notify.addEventListener("change", () => {
+    if (notify.checked && receipt.files.length > 0) {
+      btn.classList.remove("ready");
+      btn.classList.add("active");
+      btn.disabled = false;
+    }
+  });
+
+});
+</script>
+
+</body>
+</html>

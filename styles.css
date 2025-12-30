@@ -1,0 +1,1048 @@
+﻿<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+  min-height: 100vh;
+}
+
+
+    .wrap {
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+    .card {
+      background: rgba(0,0,0,0.45);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.25);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #00c6ff;
+      color: #000;
+      border-color: #00c6ff;
+      font-weight: 600;
+    }
+
+    .queue {
+      margin-top: 6px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.35);
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .queue-row {
+      display: flex;
+      gap: 8px;
+      padding: 8px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .queue-row:last-child {
+      border-bottom: none;
+    }
+
+    .pos {
+      width: 28px;
+      font-weight: bold;
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    .info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .nick {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .card-mask {
+      opacity: 0.85;
+    }
+
+    .goal {
+      opacity: 0.8;
+      font-size: 12px;
+    }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .hint-strong {
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+button,
+.tab,
+.btn-main,
+.btn-secondary {
+  border-radius: 999px !important;
+}
+
+ 
+
+/* ===== ОСНОВНЫЕ КНОПКИ ===== */
+button,
+.btn-main,
+.btn-secondary,
+.tab {
+  background: linear-gradient(180deg, #4fd1ff, #1ea7d9);
+  color: #ffd84d !important;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+/* hover */
+button:hover,
+.btn-main:hover,
+.btn-secondary:hover,
+.tab:hover {
+  background: linear-gradient(180deg, #6be0ff, #2fb8eb);
+}
+
+/* активная вкладка */
+.tab_active {
+  background: linear-gradient(180deg, #2fb8eb, #0b84c1);
+}
+
+/* disabled */
+button:disabled {
+  background: #2b4d5a;
+  color: #9aa9ad !important;
+  box-shadow: none;
+}
+
+/* компактная COPY */
+#copyCardBtn {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  border-radius: 10px;
+}
+
+/* адаптив */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 12px;
+  }
+  h1 {
+    font-size: 18px;
+  }
+}
+/* === ФИНАЛ: СИНИЕ КНОПКИ + ЖЁЛТЫЙ ТЕКСТ === */
+.tab,
+button,
+.btn-main,
+.btn-secondary {
+  background: linear-gradient(180deg, #2fb8ff, #0b74ff) !important;
+  color: #ffd84d !important;        /* ЖЁЛТЫЙ ТЕКСТ */
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  font-weight: 700;
+}
+
+/* hover — лёгкое усиление */
+.tab:hover,
+button:hover,
+.btn-main:hover,
+.btn-secondary:hover {
+  filter: brightness(1.08);
+}
+
+/* активная вкладка (одна!) */
+.tab.active {
+  background: linear-gradient(180deg, #3fd0ff, #0a6dff) !important;
+  color: #ffd84d !important;
+  box-shadow: 0 0 0 2px rgba(255,216,77,0.35);
+}
+/* === БАЗА: ВСЕ КНОПКИ (НЕАКТИВНЫЕ ПО УМОЛЧАНИЮ) === */
+.tab,
+button,
+.btn-main,
+.btn-secondary {
+  background: linear-gradient(180deg, #1b5fa8, #0a3f7a) !important; /* ТЕМНЕЕ */
+  color: #ffd84d !important; /* жёлтый текст */
+  border: 1px solid rgba(255,255,255,0.15);
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+/* hover для неактивных */
+.tab:hover,
+button:hover,
+.btn-main:hover,
+.btn-secondary:hover {
+  opacity: 0.9;
+  filter: brightness(1.05);
+}
+
+/* === АКТИВНАЯ КНОПКА (ТОЛЬКО ОДНА) === */
+.tab.active {
+  background: linear-gradient(180deg, #3fd0ff, #0b74ff) !important; /* ЯРКО-СИНЯЯ */
+  color: #ffd84d !important;
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(255,216,77,0.35);
+}
+
+</style>
+   
+    @media (max-width: 480px) {
+      .wrap {
+        padding: 12px;
+      }
+      h1 {
+        font-size: 18px;
+      }
+    }
+/* ===== PAY PAGE FIX ===== */
+
+.box {
+  margin: 0 0 8px 0;
+  padding: 12px;
+}
+
+
+
+.row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+
+.topRow {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+
+.kv{
+  display:flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.k{
+  font-size: 12px;
+  opacity: .85;
+}
+
+.v{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* номер карты */
+.cardTop{
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+.card-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap: wrap;
+}
+
+.card-row .v{
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* кнопка COPY */
+.copy-mini{
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(0,0,0,.35);
+  color: #ffd84d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* чекбокс */
+.check-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-top: 10px;
+}
+
+.check-row input{
+  margin-top: 4px;
+}
+
+/* нижние кнопки */
+.pay-actions{
+  display:flex;
+  gap:10px;
+  margin-top: 14px;
+}
+
+.pay-actions .btn-main,
+.pay-actions .btn-secondary{
+  flex:1;
+}
+/* === PAY PAGE: компактнее === */
+
+.pay h1 {
+  font-size: 18px;
+}
+
+.pay .sub {
+  font-size: 13px;
+}
+
+.pay .card-row,
+.pay .box,
+.pay .list li {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.pay .card-row .v {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pay .hint,
+.pay .notify {
+  font-size: 12px;
+}
+.box ol {
+  margin-left: 0;
+  padding-left: 18px;
+}
+
+
+/* Чекбоксы */
+.checkRow {
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+/* Поясняющий текст */
+.note {
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 14px;
+  border-radius: 10px;
+
+  background: linear-gradient(180deg, #4fb7ff, #2d8fe0);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+
+  cursor: pointer;
+  user-select: none;
+  border: none;
+}
+
+.file-btn:hover {
+  background: linear-gradient(180deg, #63c3ff, #3799ea);
+}
+
+.file-name {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #cfe9ff;
+}
+/* COPY button - make it look active */
+#copyCardBtn, .copy-btn {
+  opacity: 1 !important;
+  filter: none !important;
+  pointer-events: auto !important;
+
+  background: linear-gradient(180deg, #4fb7ff, #2d8fee) !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 8px 18px rgba(45,143,238,.35) !important;
+}
+
+#copyCardBtn:disabled, .copy-btn:disabled {
+  opacity: 1 !important;   /* чтобы не “серела” */
+  cursor: pointer !important;
+}
+/* ===== COMPACT PAY LAYOUT ===== */
+.box {
+  margin: 6px 0;
+  padding: 10px 12px;
+}
+
+.box > .k {
+  margin-bottom: 4px;
+}
+
+.list {
+  margin: 4px 0 6px;
+  padding-left: 16px;
+}
+
+.list li {
+  margin-bottom: 3px;
+  line-height: 1.25;
+}
+
+.checkRow {
+  margin: 4px 0;
+}
+
+.note {
+  margin-top: 4px;
+  line-height: 1.3;
+}
+/* COPY button fix */
+.copy-btn,
+#copyBtn,
+button.copy {
+  background: linear-gradient(180deg, #4fb7ff, #2d8fee);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(45,143,238,.35);
+}
+/* ===== ЕДИНЫЙ ВИД ВСЕХ КНОПОК ===== */
+button,
+.btn,
+.file-btn,
+.copy-btn,
+a.btn,
+a.copy-btn {
+  border-radius: 14px !important;
+}
+
+/* одинаково во всех состояниях */
+button:hover,
+button:active,
+button:focus,
+.btn:hover,
+.btn:active,
+.btn:focus,
+.file-btn:hover,
+.file-btn:active,
+.file-btn:focus,
+.copy-btn:hover,
+.copy-btn:active,
+.copy-btn:focus,
+a.btn:hover,
+a.btn:active,
+a.btn:focus {
+  border-radius: 14px !important;
+}
+/* ===== ЕДИНЫЙ СТИЛЬ ВСЕХ КНОПОК НА СТРАНИЦЕ ===== */
+button,
+.btn,
+.file-btn,
+.copy-btn,
+a.btn,
+a.copy-btn {
+  font-family: Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+
+  color: #ffffff !important;           /* единый цвет текста */
+  text-decoration: none !important;
+
+  background: linear-gradient(180deg, #59d8ff, #2d8fe6) !important; /* единый фон */
+  border: 0 !important;
+  border-radius: 14px !important;
+
+  padding: 10px 16px !important;
+  line-height: 1 !important;
+
+  box-shadow: 0 8px 18px rgba(0,0,0,.25) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* hover / active одинаковые для всех */
+button:hover,
+.btn:hover,
+.file-btn:hover,
+.copy-btn:hover,
+a.btn:hover,
+a.copy-btn:hover {
+  filter: brightness(1.08) !important;
+}
+
+button:active,
+.btn:active,
+.file-btn:active,
+.copy-btn:active,
+a.btn:active,
+a.copy-btn:active {
+  transform: translateY(1px) !important;
+  filter: brightness(0.96) !important;
+}
+
+/* если где-то внутри кнопки есть span/strong и т.п. — принудительно белый текст */
+button * ,
+.btn * ,
+.file-btn * ,
+.copy-btn * ,
+a.btn * ,
+a.copy-btn * {
+  color: #ffffff !important;
+}
+/* ===== QUEUE: сделать ВСЕ кнопки одинаковыми ===== */
+
+/* общий вид (таб-кнопки сверху + большие кнопки снизу) */
+.queue .tabs button,
+.queue .tabs .btn,
+.queue .actions button,
+.queue .actions .btn,
+.queue button.btn,
+.queue a.btn,
+.queue button {
+  background: linear-gradient(180deg, #59d8ff 0%, #2d8fe6 100%) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+
+  border-radius: 18px !important;     /* одинаковое скругление */
+  padding: 12px 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: .2px;
+
+  opacity: 1 !important;              /* убираем "серость" */
+  filter: none !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.25) !important;
+}
+
+/* hover/active — одинаковые */
+.queue .tabs button:hover,
+.queue .tabs .btn:hover,
+.queue .actions button:hover,
+.queue .actions .btn:hover,
+.queue button:hover,
+.queue a.btn:hover{
+  filter: brightness(1.08) !important;
+}
+
+.queue .tabs button:active,
+.queue .tabs .btn:active,
+.queue .actions button:active,
+.queue .actions .btn:active,
+.queue button:active,
+.queue a.btn:active{
+  transform: translateY(1px) !important;
+  filter: brightness(0.96) !important;
+}
+
+/* только реально disabled должны выглядеть серыми */
+.queue button:disabled,
+.queue .btn.disabled,
+.queue .btn[aria-disabled="true"]{
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}
+
+/* Текст “Перечислишь первому…” — меньше и компактнее */
+.queue .hint,
+.queue .note,
+.queue .queueHint,
+.queue .msg{
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  margin: 6px 0 10px !important;
+}
+/* =========================
+   CLEAN LAYER (override)
+   ========================= */
+
+/* плотнее блоки */
+.card { padding: 14px !important; }
+.box  { margin: 0 0 10px 0 !important; padding: 10px 12px !important; }
+.list { margin: 6px 0 8px 18px !important; padding: 0 !important; }
+.list li { margin: 0 0 4px 0 !important; line-height: 1.25 !important; }
+.note { margin-top: 4px !important; line-height: 1.3 !important; }
+
+/* верхняя строка получатель/карта в одну линию */
+.topRow{
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+.kv { display:flex !important; flex-direction:column !important; gap:2px !important; }
+.k  { font-size:12px !important; opacity:.85 !important; }
+.v  { font-size:14px !important; font-weight:700 !important; }
+
+/* ЕДИНЫЙ стиль всех кнопок */
+.btn,
+button.btn,
+a.btn,
+.copy-btn,
+.file-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  background: linear-gradient(180deg, #59d8ff, #2d8fe6) !important;
+  color:#fff !important;
+
+  border:none !important;
+  border-radius: 18px !important;
+  padding: 12px 16px !important;
+
+  font-weight:700 !important;
+  font-size:14px !important;
+  text-decoration:none !important;
+
+  cursor:pointer !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.25) !important;
+}
+
+/* маленькая кнопка (COPY) */
+.btn--small,
+.copy-btn{
+  padding: 7px 12px !important;
+  font-size:12px !important;
+  border-radius: 14px !important;
+}
+
+/* кнопка "Прикрепить скрин" как обычная кнопка */
+.file-btn{
+  display:inline-flex !important;
+  width:auto !important;
+  padding:12px 18px !important;
+  border-radius:18px !important;
+  font-size:14px !important;
+}
+
+
+/* hover/active одинаковые */
+.btn:hover,
+.copy-btn:hover,
+.file-btn:hover{
+  filter:brightness(1.08) !important;
+}
+.btn:active,
+.copy-btn:active,
+.file-btn:active{
+  transform:translateY(1px) !important;
+  filter:brightness(0.96) !important;
+}
+
+/* если реально disabled */
+.btn:disabled,
+.btn.disabled{
+  opacity:.55 !important;
+  cursor:not-allowed !important;
+}
+/* ==============================
+   BANK / MONO-LIKE THEME (DROP-IN)
+   Вставь в КОНЕЦ styles.css
+   ============================== */
+
+/* базовые переменные */
+:root{
+  --bg1:#0b2233;
+  --bg2:#153a4f;
+  --card:rgba(10,16,20,.62);
+  --cardBorder:rgba(255,255,255,.08);
+
+  --text:#ffffff;
+  --muted:rgba(255,255,255,.72);
+
+  --fieldBg:#ffffff;
+  --fieldText:#101418;
+  --fieldBorder:rgba(0,0,0,.10);
+
+  --primary1:#19c2ff;
+  --primary2:#0a9bff;
+  --primaryText:#07131b;
+
+  --secondaryBg:rgba(255,255,255,.10);
+  --secondaryBorder:rgba(255,255,255,.14);
+}
+
+/* фон страницы */
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  color:var(--text);
+  background: radial-gradient(1200px 600px at 40% -10%, rgba(25,194,255,.16), transparent 55%),
+              linear-gradient(135deg, var(--bg1), var(--bg2));
+}
+
+/* контейнер */
+.wrap{
+  width:100%;
+  max-width:480px;
+  padding:16px;
+  box-sizing:border-box;
+  margin:0 auto;
+}
+
+/* карточка */
+.card{
+  background:var(--card);
+  border:1px solid var(--cardBorder);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+}
+
+/* заголовки/подзаголовки */
+h1{
+  margin:0 0 8px 0;
+  font-size:19px;
+  letter-spacing:.2px;
+}
+.sub, .subtitle{
+  font-size:12.5px;
+  color:var(--muted);
+  margin-bottom:12px;
+  line-height:1.35;
+}
+
+/* плотность блоков формы */
+.box{ margin:0 0 10px 0; }
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 6px 0;
+}
+
+/* поля ввода — белые, как в банке */
+input, select, textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--fieldBorder);
+  background:var(--fieldBg);
+  color:var(--fieldText);
+  outline:none;
+  font-size:13px;
+}
+input::placeholder, textarea::placeholder{ color:rgba(16,20,24,.45); }
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(25,194,255,.55);
+  box-shadow: 0 0 0 3px rgba(25,194,255,.18);
+}
+
+/* верхняя строка "получатель / карта" */
+.row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:12px;
+}
+.kv{ flex:1; min-width:0; }
+.k{ font-size:12px; color:var(--muted); margin-bottom:4px; }
+.v{ font-size:13.5px; font-weight:700; }
+
+/* список инструкций */
+.list, ol{
+  margin:10px 0 12px 0;
+  padding-left:18px;
+}
+.list li, ol li{
+  margin:0 0 6px 0;
+  line-height:1.35;
+  font-size:13px;
+}
+
+/* общий стиль кнопок (единый для всех) */
+button, .btn, .btn-main, .btn-secondary, .tab, .copy-btn, .file-btn, a.btn, a.copy-btn{
+  -webkit-appearance:none;
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  user-select:none;
+  font-weight:700;
+  font-size:13px;
+  border-radius:999px;        /* одинаковые скругления */
+  padding:10px 14px;
+  line-height:1;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition: transform .08s ease, filter .12s ease, opacity .12s ease;
+}
+
+/* основная кнопка */
+.btn-main, button.btn-main{
+  background: linear-gradient(180deg, var(--primary1), var(--primary2));
+  color: var(--primaryText);
+  box-shadow: 0 10px 22px rgba(0,0,0,.22);
+}
+
+/* вторичная */
+.btn-secondary, button.btn-secondary{
+  background: var(--secondaryBg);
+  border:1px solid var(--secondaryBorder);
+  color: var(--text);
+}
+
+/* маленькая кнопка COPY — чтобы была "активной" */
+.copy-btn, button.copy-btn{
+  padding:7px 12px;
+  font-size:12px;
+  background: linear-gradient(180deg, var(--primary1), var(--primary2));
+  color: var(--primaryText);
+}
+
+/* кнопка "прикрепить скрин" — как обычная (не на всю ширину) */
+.file-btn, button.file-btn{
+  background: var(--secondaryBg);
+  border:1px solid var(--secondaryBorder);
+  color: var(--text);
+  padding:9px 14px;
+}
+
+/* состояния */
+button:hover, .btn:hover, .tab:hover, .copy-btn:hover, .file-btn:hover{ filter:brightness(1.06); }
+button:active, .btn:active, .tab:active, .copy-btn:active, .file-btn:active{ transform:translateY(1px); filter:brightness(.98); }
+button:disabled, .disabled{
+  opacity:.55 !important;
+  cursor:not-allowed !important;
+  transform:none !important;
+}
+
+/* блок кнопок внизу (как у тебя) */
+.buttons{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+.buttons > *{ flex:1; }
+
+/* табы линий 10/50/100 */
+.tabs{ display:flex; gap:10px; margin:10px 0 12px 0; }
+.tab{
+  flex:1;
+  background: var(--secondaryBg);
+  border:1px solid var(--secondaryBorder);
+  color: var(--text);
+}
+.tab.active{
+  background: linear-gradient(180deg, var(--primary1), var(--primary2));
+  color: var(--primaryText);
+  border: none;
+}
+
+/* текст подсказки типа "Перечислишь первому..." */
+.hint-strong, .hint{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.35;
+  margin:8px 0 10px 0;
+}
+
+/* чекбоксы — чуть аккуратнее */
+.checkRow{
+  margin:8px 0;
+  font-size:13px;
+}
+/* убрать левые "квадратики/маркеры" перед строками */
+.checkRow::before,
+.note::before,
+.hint::before,
+.card label::before {
+  content: none !important;
+  display: none !important;
+}
+
+ul, ol { list-style: none !important; padding-left: 0 !important; }
+li::marker { content: "" !important; }
+/* чекбоксы: банковский стиль */
+.checkRow input[type="checkbox"]{
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #00c6ff !important; /* цвет галочки */
+  transform: translateY(2px);
+}
+.checkRow{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+/* компактнее текст (меньше переносов) */
+.card { max-width: 520px !important; } /* чуть шире карточка */
+.card, .card * { letter-spacing: 0 !important; }
+
+.card p, .card label, .card li, .note, .hint, .subtitle {
+  font-size: 12.5px !important;
+  line-height: 1.28 !important;
+}
+.noteTitle{
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.steps{
+  margin:0;
+  padding-left:18px;
+}
+
+.steps li{
+  margin:6px 0;
+}
+/* кнопка — состояние ожидания */
+#sentBtn.waiting {
+  opacity: .55;
+  filter: grayscale(20%);
+}
+
+/* квитанция есть, но уведомления не включены */
+#sentBtn.ready {
+  opacity: .9;
+  box-shadow: 0 0 12px rgba(0,198,255,.45);
+  cursor: not-allowed;
+}
+
+/* активная */
+#sentBtn.active {
+  opacity: 1;
+  box-shadow: 0 0 16px rgba(0,198,255,.75);
+  cursor: pointer;
+}
+
+/* мягкая подсветка чекбокса уведомлений */
+.checkRow.attention {
+  background: rgba(0,198,255,.12);
+  border-radius: 10px;
+  padding: 6px;
+  animation: pulse 1.2s ease-in-out 2;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 rgba(0,198,255,0); }
+  50% { box-shadow: 0 0 12px rgba(0,198,255,.6); }
+  100% { box-shadow: 0 0 0 rgba(0,198,255,0); }
+}
+/* ===== INDEX FIX (банковский стартовый экран) ===== */
+.card.intro {
+  padding: 34px 28px !important;
+}
+
+
+.card.intro h1{
+  font-size: 26px !important;
+  line-height: 1.15 !important;
+  margin: 0 0 10px !important;
+}
+
+.card.intro .subtitle{
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  opacity: .86 !important;
+  margin: 0 0 18px !important;
+}
+
+.intro-buttons{
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.start-btn{
+  width: auto !important;
+  min-width: 220px !important;
+  padding: 12px 22px !important;
+  border-radius: 18px !important;
+  font-size: 14px !important;
+}
+
+/* если вдруг общий .buttons растягивает всё */
+.buttons > *{
+  flex: 0 0 auto !important;
+}
+/* ===== ЗОЛОТОЙ ТЕКСТ НА ВСЕХ КНОПКАХ ===== */
+button,
+.btn,
+.btn-main,
+.btn-secondary,
+.copy-btn,
+.copy-mini,
+.file-btn {
+  color: #FFD76A !important; /* жёлто-золотой */
+  font-weight: 600;
+}
+
+/* если внутри кнопки есть span / иконки */
+button *,
+.btn * {
+  color: #FFD76A !important;
+}
+
+
+  </style>

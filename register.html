@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Регистрация — Территория доверия и поддержки</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Регистрация</h1>
+      <div class="sub">Вы выбрали линию: <span class="line" id="lineLabel">—</span></div>
+
+      <div class="box">
+  <label>Ник (как вас показывать в очереди)</label>
+  <input
+    id="nick"
+    placeholder="Например: олег_киев"
+    maxlength="24"
+  />
+</div>
+
+<div class="box">
+  <label>Цель (коротко)</label>
+  <input
+    id="goal"
+    placeholder="Например: лекарства, учеба, ремонт"
+    maxlength="80"
+  />
+</div>
+
+<div class="box">
+  <label>Номер карты</label>
+  <input
+    id="card"
+    type="text"
+    inputmode="numeric"
+    autocomplete="cc-number"
+    placeholder="0000 0000 0000 0000"
+    maxlength="19"
+  />
+</div>
+
+
+
+      <button class="btn-main" id="nextBtn">Далее → к оплате</button>
+      <button class="btn-secondary" onclick="history.back()">Назад</button>
+
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const nick = document.getElementById("nick");
+  const goal = document.getElementById("goal");
+  const card = document.getElementById("card");
+  const btn  = document.getElementById("nextBtn");
+  const msg  = document.getElementById("msg");
+  const lineLabel = document.getElementById("lineLabel");
+
+  /* ===== показать выбранную линию ===== */
+  const params = new URLSearchParams(window.location.search);
+  const lineFromUrl = params.get("line");
+  const savedLine = localStorage.getItem("line");
+
+  const line = lineFromUrl || savedLine;
+
+  if (line && lineLabel) {
+    lineLabel.textContent = line;
+    localStorage.setItem("line", line);
+  }
+
+  /* ===== автоформат карты ==== */
+  card.addEventListener("input", () => {
+    let digits = card.value.replace(/\D/g, "").slice(0, 16);
+    card.value = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  });
+
+  /* ===== кнопка Далее ===== */
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (msg) msg.textContent = "";
+
+    const nickVal = nick.value.trim();
+    const goalVal = goal.value.trim();
+    const digits  = card.value.replace(/\D/g, "");
+
+    if (!nickVal) {
+      msg.textContent = "Введите ник";
+      nick.focus();
+      return;
+    }
+
+    if (!goalVal) {
+      msg.textContent = "Введите цель";
+      goal.focus();
+      return;
+    }
+
+    if (digits.length !== 16) {
+      msg.textContent = "Введите корректный номер карты (16 цифр)";
+      card.focus();
+      return;
+    }
+
+    /* ===== сохраняем ===== */
+    localStorage.setItem("nick", nickVal);
+    localStorage.setItem("goal", goalVal);
+    localStorage.setItem("card", digits);
+
+    /* ===== переход к оплате ===== */
+    window.location.href = "pay.html?line=" + encodeURIComponent(line);
+  });
+
+});
+</script>
+
+
+
+
+</body>
+</html>
