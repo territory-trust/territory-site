@@ -1089,8 +1089,16 @@ button *,
   justify-content: center;
   padding: 16px;
 }
+/* Центрируем ТОЛЬКО главную страницу */
+.intro-page .wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   </style>
+
 
 
 
