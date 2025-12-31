@@ -1078,5 +1078,14 @@ button *,
     font-size: 16px; /* важно: iOS не будет зумить */
   }
 }
+/* === Центрирование главной карточки === */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
 
   </style>
+
