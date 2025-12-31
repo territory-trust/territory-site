@@ -1477,8 +1477,64 @@ button.btn-main {
   filter: none !important;
   box-shadow: none !important;
 }
+/* ===== ФИНАЛЬНАЯ КОРРЕКЦИЯ РАЗМЕРОВ ===== */
+
+/* Базовый текст – чуть меньше */
+body {
+  font-size: 16px !important;
+}
+
+/* Заголовки */
+h1 {
+  font-size: 30px !important;
+  line-height: 1.25 !important;
+}
+
+h2 {
+  font-size: 22px !important;
+}
+
+/* Описания, инструкции */
+.subtitle,
+p,
+.label,
+.instruction,
+.queue-description {
+  font-size: 17px !important;
+  line-height: 1.55 !important;
+}
+
+/* Списки участников */
+.queue-item,
+.queue-item span,
+.queue-item div {
+  font-size: 16px !important;
+}
+
+/* ===== КНОПКИ ===== */
+
+/* Основные кнопки */
+.btn-main,
+button.btn-main {
+  font-size: 18px !important;
+  padding: 14px 22px !important;
+  border-radius: 28px !important;
+
+  /* туман НЕ возвращаем */
+  filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 6px 14px rgba(0,140,255,0.22) !important;
+}
+
+/* Второстепенные кнопки */
+button,
+.btn-secondary {
+  font-size: 16px !important;
+  padding: 12px 20px !important;
+}
 
   </style>
+
 
 
 
