@@ -1586,8 +1586,49 @@ input[type="text"],
 input[type="number"] {
   min-height: 44px !important;
 }
+/* ===== КНОПКИ: убираем туман и кислоту ===== */
+
+button,
+.btn,
+.primary-btn {
+  background: linear-gradient(
+    180deg,
+    #2f8fe8 0%,
+    #1f6fb8 100%
+  );                /* спокойный синий */
+  
+  box-shadow: none; /* ❌ УБРАЛИ ТУМАН */
+  
+  color: #eaf4ff;   /* мягкий светлый текст */
+  font-weight: 600;
+  font-size: 15px; /* чуть меньше, чем было */
+  
+  text-shadow: none; /* ❌ УБРАЛИ СВЕЧЕНИЕ ТЕКСТА */
+}
+
+/* Кнопка "Помощь отправлена - Далее" */
+button.disabled,
+button[disabled] {
+  background: #2a4b63;
+  color: #9fb6c9;
+  box-shadow: none;
+  opacity: 1; /* чтобы не была мутной */
+}
+
+/* Кнопка "Назад" */
+button.secondary,
+.back-btn {
+  background: linear-gradient(
+    180deg,
+    #3a5f7a 0%,
+    #2a4b63 100%
+  );
+  color: #d6e6f2;
+  box-shadow: none;
+}
 
   </style>
+
 
 
 
