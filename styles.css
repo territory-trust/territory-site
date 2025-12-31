@@ -1045,4 +1045,38 @@ button *,
 }
 
 
+/* ===== MOBILE READABILITY BOOST ===== */
+@media (max-width: 480px) {
+
+  body {
+    font-size: 16px;
+  }
+
+  .card h1 {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .card p,
+  .subtitle {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .queue-item,
+  .payment-info,
+  .instruction {
+    font-size: 15px;
+  }
+
+  button,
+  .btn-main {
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px; /* важно: iOS не будет зумить */
+  }
+}
+
   </style>
