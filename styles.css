@@ -1532,8 +1532,63 @@ button,
   font-size: 16px !important;
   padding: 12px 20px !important;
 }
+/* ===== ФИНАЛЬНЫЙ БАЛАНС UI ===== */
+
+/* --- КНОПКИ: текст чуть меньше --- */
+button,
+.btn-main,
+.btn-secondary {
+  font-size: 16px !important;
+  padding: 12px 20px !important;
+}
+
+/* Главная кнопка (синяя) */
+.btn-main {
+  font-size: 17px !important;
+}
+
+/* --- ОЧЕРЕДЬ УЧАСТНИКОВ: увеличить --- */
+.queue-item {
+  font-size: 17px !important;
+  line-height: 1.5 !important;
+}
+
+.queue-item strong,
+.queue-item .name {
+  font-size: 18px !important;
+}
+
+.queue-item .details,
+.queue-item .purpose {
+  font-size: 16px !important;
+  opacity: 0.9;
+}
+
+/* --- ПОДПИСИ НАД ПОЛЯМИ (Регистрация) --- */
+label,
+.form-label {
+  font-size: 16px !important;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* --- ПОЛЯ ВВОДА: меньше и аккуратнее --- */
+input,
+textarea {
+  font-size: 17px !important;
+  padding: 12px 14px !important;
+  height: auto !important;
+  border-radius: 14px !important;
+}
+
+/* Убрать ощущение "ведра" */
+input[type="text"],
+input[type="number"] {
+  min-height: 44px !important;
+}
 
   </style>
+
 
 
 
