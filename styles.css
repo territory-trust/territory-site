@@ -1656,8 +1656,23 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(79,178,255,0.25) !important;
   background: #ffffff !important;
 }
+/* ===== FIX INTRO SMALL TEXT ===== */
+
+.subtitle {
+  font-size: 17px !important;   /* было мелко — стало читаемо */
+  line-height: 1.5 !important;
+  color: rgba(255,255,255,0.88) !important;
+}
+
+/* на совсем маленьких экранах */
+@media (max-width: 420px) {
+  .subtitle {
+    font-size: 18px !important;
+  }
+}
 
   </style>
+
 
 
 
