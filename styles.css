@@ -1626,8 +1626,39 @@ button.secondary,
   color: #d6e6f2;
   box-shadow: none;
 }
+/* ===== FIX INPUT VISIBILITY ===== */
+
+/* обычное состояние полей */
+input,
+textarea,
+select {
+  background: #ffffff !important;
+  color: #0b1f2a !important;
+  font-size: 16px !important;
+  border-radius: 14px !important;
+  border: 2px solid rgba(255,255,255,0.15) !important;
+  box-shadow: none !important;
+}
+
+/* placeholder (текст "Например:") */
+input::placeholder,
+textarea::placeholder {
+  color: #9aa6b2 !important;
+  opacity: 1 !important;
+}
+
+/* состояние ФОКУСА (когда нажал) */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #4fb2ff !important;
+  box-shadow: 0 0 0 3px rgba(79,178,255,0.25) !important;
+  background: #ffffff !important;
+}
 
   </style>
+
 
 
 
