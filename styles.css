@@ -1670,8 +1670,35 @@ select:focus {
     font-size: 18px !important;
   }
 }
+/* ===== FIX OVERBRIGHT BUTTONS ===== */
+
+/* Основная активная кнопка */
+button.primary,
+.btn-primary {
+  background: linear-gradient(180deg, #3aa9ff, #1f78d1) !important;
+  color: #0b1a26 !important;          /* тёмный текст = читаемо */
+  font-weight: 600;
+  box-shadow: none !important;        /* УБРАЛИ СВЕЧЕНИЕ */
+  text-shadow: none !important;       /* УБРАЛИ ПОДСВЕТКУ ТЕКСТА */
+}
+
+/* При нажатии */
+button.primary:active,
+.btn-primary:active {
+  background: linear-gradient(180deg, #2f96ea, #1b6ab8) !important;
+}
+
+/* Неактивная / финальная кнопка */
+button.disabled,
+button:disabled {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.5) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
 
   </style>
+
 
 
 
