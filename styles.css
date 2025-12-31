@@ -1717,6 +1717,38 @@ button.disabled:hover,
     background: rgba(40, 80, 110, 0.9) !important;
 }
 
+/* === FIX: кнопка "Прикрепить квитанцию" === */
+button.upload,
+.button-upload,
+.attach-btn,
+button[type="file"] {
+    background: #2f6fa3 !important;   /* спокойный синий */
+    color: #ffffff !important;        /* читаемый белый */
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+/* убираем свечение при наведении */
+button.upload:hover,
+.button-upload:hover,
+.attach-btn:hover {
+    background: #2f6fa3 !important;
+}
+
+/* === FIX: кнопка "Помощь отправлена – Далее" === */
+button.final,
+button.disabled,
+.btn-final {
+    background: #1f5f8b !important;   /* обычный синий */
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+}
 
 
 
