@@ -1378,8 +1378,49 @@ button,
   font-weight: 600;
   letter-spacing: 0.5px;
 }
+/* ===== FIX: УБРАТЬ ТУМАН + УВЕЛИЧИТЬ ШРИФТ ===== */
+
+/* Заголовок */
+.card-intro h1 {
+  font-size: 30px !important;
+  line-height: 1.25;
+  text-shadow: none !important;
+}
+
+/* Подзаголовок */
+.subtitle {
+  font-size: 19px !important;
+  line-height: 1.55;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Кнопка */
+.btn-main {
+  font-size: 19px !important;
+  font-weight: 600;
+  
+  /* УБИРАЕМ ТУМАН */
+  box-shadow: 
+    0 6px 18px rgba(0, 140, 255, 0.35) !important;
+  
+  filter: none !important;
+}
+
+/* Золотые линии — без тумана */
+.gold-divider {
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 0.9;
+}
+
+/* Карточка — чище */
+.card-intro {
+  box-shadow: none !important;
+}
 
   </style>
+
 
 
 
