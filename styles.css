@@ -1750,6 +1750,26 @@ button.disabled,
     opacity: 1 !important;
 }
 
+/* === FIX: кнопка "Прикрепить квитанцию" === */
+button.upload,
+button.attach,
+button[type="file"],
+button:has(svg),
+button:has(img) {
+    background: linear-gradient(180deg, #2f6fa3, #255b86) !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+/* если есть hover-эффект */
+button.upload:hover,
+button.attach:hover {
+    background: linear-gradient(180deg, #2a6392, #214f75) !important;
+}
+
 
 
 
