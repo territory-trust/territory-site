@@ -11,13 +11,20 @@ body {
 }
 
 
-    .wrap {
+.wrap {
   width: 100%;
   max-width: 480px;
   padding: 16px;
   box-sizing: border-box;
   margin: 0 auto;
+
+  /* ДОБАВИЛИ */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 
     .card {
       background: rgba(0,0,0,0.45);
@@ -1088,4 +1095,5 @@ button *,
 }
 
   </style>
+
 
