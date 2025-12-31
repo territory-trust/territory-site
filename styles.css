@@ -1176,8 +1176,25 @@ button:disabled {
   box-shadow: 0 12px 30px rgba(0, 160, 255, 0.6) !important;
   filter: none !important;
 }
+/* 💡 СВЕЧЕНИЕ КНОПКИ "НАЧАТЬ" ЧЕРЕЗ ПСЕВДОСЛОЙ */
+#startBtn {
+  position: relative;
+  z-index: 2;
+}
+
+#startBtn::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #1da9ff, #0b5ed7);
+  opacity: 0.6;
+  filter: blur(18px);
+  z-index: -1;
+}
 
   </style>
+
 
 
 
