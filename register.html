@@ -116,10 +116,33 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
-</script>
 
+  const nick = document.getElementById("nick");
+  const goal = document.getElementById("goal");
+  const card = document.getElementById("card");
+  const nextBtn = document.getElementById("nextBtn");
+
+  function checkForm() {
+    const ok =
+      nick.value.trim() !== "" &&
+      goal.value.trim() !== "" &&
+      card.value.trim().length >= 16;
+
+    nextBtn.disabled = !ok;
+    nextBtn.classList.toggle("is-active", ok);
+  }
+
+  nick.addEventListener("input", checkForm);
+  goal.addEventListener("input", checkForm);
+  card.addEventListener("input", checkForm);
+
+  checkForm(); // стартовая проверка
+});
+</script>
+    
 
 
 
 </body>
 </html>
+
