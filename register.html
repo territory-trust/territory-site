@@ -53,96 +53,79 @@
 
   <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  const nick = document.getElementById("nick");
-  const goal = document.getElementById("goal");
-  const card = document.getElementById("card");
-  const btn  = document.getElementById("nextBtn");
-  const msg  = document.getElementById("msg");
-  const lineLabel = document.getElementById("lineLabel");
-
-  /* ===== показать выбранную линию ===== */
-  const params = new URLSearchParams(window.location.search);
-  const lineFromUrl = params.get("line");
-  const savedLine = localStorage.getItem("line");
-
-  const line = lineFromUrl || savedLine;
-
-  if (line && lineLabel) {
-    lineLabel.textContent = line;
-    localStorage.setItem("line", line);
-  }
-
-  /* ===== автоформат карты ==== */
-  card.addEventListener("input", () => {
-    let digits = card.value.replace(/\D/g, "").slice(0, 16);
-    card.value = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-  });
-
-  /* ===== кнопка Далее ===== */
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (msg) msg.textContent = "";
-
-    const nickVal = nick.value.trim();
-    const goalVal = goal.value.trim();
-    const digits  = card.value.replace(/\D/g, "");
-
-    if (!nickVal) {
-      msg.textContent = "Введите ник";
-      nick.focus();
-      return;
-    }
-
-    if (!goalVal) {
-      msg.textContent = "Введите цель";
-      goal.focus();
-      return;
-    }
-
-    if (digits.length !== 16) {
-      msg.textContent = "Введите корректный номер карты (16 цифр)";
-      card.focus();
-      return;
-    }
-
-    /* ===== сохраняем ===== */
-    localStorage.setItem("nick", nickVal);
-    localStorage.setItem("goal", goalVal);
-    localStorage.setItem("card", digits);
-
-    /* ===== переход к оплате ===== */
-    window.location.href = "pay.html?line=" + encodeURIComponent(line);
-  });
-
-});
-
   const nick = document.getElementById("nick");
   const goal = document.getElementById("goal");
   const card = document.getElementById("card");
   const nextBtn = document.getElementById("nextBtn");
 
+  // Если кнопка не найдена — значит id в HTML другой
+  if (!nextBtn) return;
+
+  // Стартовое состояние
+  nextBtn.disabled = true;
+  nextBtn.classList.remove("is-active");
+
+  // Форматирование карты: только цифры + пробелы каждые 4
+  function formatCard(value) {
+    const digits = value.replace(/\D/g, "").slice(0, 16);   // только 16 цифр
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();  // 4444 4444 ...
+  }
+
+  // Проверка формы + подсветка
   function checkForm() {
-    const ok =
-      nick.value.trim() !== "" &&
-      goal.value.trim() !== "" &&
-      card.value.trim().length >= 16;
+    const nickOk = nick.value.trim().length > 0;
+    const goalOk = goal.value.trim().length > 0;
+
+    const digits = card.value.replace(/\D/g, "");
+    const cardOk = digits.length === 16;
+
+    const ok = nickOk && goalOk && cardOk;
 
     nextBtn.disabled = !ok;
     nextBtn.classList.toggle("is-active", ok);
   }
 
+  // Ввод карты: форматируем и сохраняем позицию курсора более-менее адекватно
+  card.addEventListener("input", () => {
+    const before = card.value;
+    const beforePos = card.selectionStart;
+
+    card.value = formatCard(card.value);
+
+    // лёгкая попытка не бесить курсором
+    const diff = card.value.length - before.length;
+    const newPos = Math.max(0, (beforePos ?? card.value.length) + diff);
+    card.setSelectionRange(newPos, newPos);
+
+    checkForm();
+  });
+
   nick.addEventListener("input", checkForm);
   goal.addEventListener("input", checkForm);
-  card.addEventListener("input", checkForm);
 
-  checkForm(); // стартовая проверка
+  // Клик "Далее"
+  nextBtn.addEventListener("click", () => {
+    const digits = card.value.replace(/\D/g, "");
+    if (digits.length !== 16) return;
+
+    localStorage.setItem("nick", nick.value.trim());
+    localStorage.setItem("goal", goal.value.trim());
+    localStorage.setItem("card", digits);
+
+    // line может быть в url или в localStorage
+    const params = new URLSearchParams(window.location.search);
+    const line = params.get("line") || localStorage.getItem("line") || "";
+
+    window.location.href = "pay.html?line=" + encodeURIComponent(line);
+  });
+
+  // Стартовая проверка
+  checkForm();
 });
 </script>
     
 
-
-
 </body>
 </html>
+
 
