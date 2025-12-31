@@ -1249,8 +1249,25 @@ button,
 .queue-item strong {
   font-size: 18px;
 }
+/* ===== HERO (главная страница) ===== */
+.intro-card h1,
+.hero h1,
+.card h1 {
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+}
+
+.intro-card p,
+.hero p,
+.card p {
+  font-size: 20px;      /* вот это и есть “значительно” */
+  line-height: 1.45;
+  opacity: 0.92;        /* чтобы был читаем, но мягкий */
+}
 
   </style>
+
 
 
 
