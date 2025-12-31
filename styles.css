@@ -1296,8 +1296,38 @@ button,
     );
   box-shadow: 0 0 8px rgba(212,175,55,0.5);
 }
+/* === GOLD DIVIDER TEST === */
+.gold-divider {
+  width: 88%;
+  height: 3px;
+  margin: 20px auto;
+  background: linear-gradient(to right, transparent, gold, gold, transparent);
+  box-shadow: 0 0 12px gold;
+}
+
+.gold-divider.triple {
+  height: 5px;
+  background:
+    linear-gradient(to right, transparent, gold, transparent),
+    linear-gradient(to right, transparent, gold, transparent),
+    linear-gradient(to right, transparent, gold, transparent);
+  background-size: 100% 1px, 100% 1px, 100% 1px;
+  background-position: 0 0, 0 2px, 0 4px;
+  background-repeat: no-repeat;
+}
+
+.gold-divider.double {
+  height: 3px;
+  background:
+    linear-gradient(to right, transparent, gold, transparent),
+    linear-gradient(to right, transparent, gold, transparent);
+  background-size: 100% 1px, 100% 1px;
+  background-position: 0 0, 0 2px;
+  background-repeat: no-repeat;
+}
 
   </style>
+
 
 
 
