@@ -1096,8 +1096,15 @@ button *,
   align-items: center;
   justify-content: center;
 }
+/* Убираем подсветку у кнопки "Правила участия" */
+.btn-secondary {
+  background: linear-gradient(180deg, #1c3b52, #132b3d);
+  box-shadow: none;
+  color: #ffd966;
+}
 
   </style>
+
 
 
 
