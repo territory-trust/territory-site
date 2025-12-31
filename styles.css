@@ -1418,8 +1418,68 @@ button,
 .card-intro {
   box-shadow: none !important;
 }
+/* ===== УБИТЬ ТУМАН + УВЕЛИЧИТЬ ШРИФТ (HARD FIX) ===== */
+
+/* 0) На всякий случай увеличим базу */
+body { font-size: 18px !important; }
+
+/* 1) Заголовок — крупнее */
+.card-intro h1,
+.wrap h1,
+h1 {
+  font-size: 34px !important;
+  line-height: 1.2 !important;
+  text-shadow: none !important;
+}
+
+/* 2) Подзаголовок — крупнее и контрастнее */
+.subtitle,
+.card-intro .subtitle,
+.wrap .subtitle {
+  font-size: 20px !important;
+  line-height: 1.55 !important;
+  opacity: 1 !important;
+  color: rgba(255,255,255,0.78) !important;
+  text-shadow: none !important;
+}
+
+/* 3) Кнопка — убрать «прожектор/туман» */
+.btn-main,
+button.btn-main {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+
+  /* ВОТ ЭТО и есть туман: рубим */
+  filter: none !important;
+  backdrop-filter: none !important;
+
+  /* мягкое свечение, не дым-машина */
+  box-shadow: 0 8px 18px rgba(0,140,255,0.25) !important;
+}
+
+/* 4) Часто туман сидит в псевдо-слоях */
+.btn-main::before, .btn-main::after,
+.card-intro::before, .card-intro::after,
+.wrap::before, .wrap::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 5) Золотые линии — без засвета */
+.gold-divider, .gold-divider.triple, .gold-divider.double {
+  filter: none !important;
+  box-shadow: none !important;
+  opacity: 0.9 !important;
+}
+
+/* 6) Если есть общий "glow" на карточке — убираем */
+.card-intro {
+  filter: none !important;
+  box-shadow: none !important;
+}
 
   </style>
+
 
 
 
