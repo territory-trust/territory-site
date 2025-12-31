@@ -1769,6 +1769,38 @@ button.upload:hover,
 button.attach:hover {
     background: linear-gradient(180deg, #2a6392, #214f75) !important;
 }
+/* === FINAL FIX: читаемая кнопка "Прикрепить квитанцию" === */
+.btn-attach{
+  background: #2b6ea6 !important;     /* спокойный синий */
+  color: #ffffff !important;          /* белый текст */
+  font-size: 16px !important;
+  font-weight: 700 !important;
+
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+
+  border: 1px solid rgba(255,255,255,.18) !important;
+  opacity: 1 !important;
+}
+
+/* если на элемент навешан общий “glow” через псевдо-элементы */
+.btn-attach::before,
+.btn-attach::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* hover/active тоже без неона */
+.btn-attach:hover,
+.btn-attach:active{
+  background: #255f90 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
 
 
 
