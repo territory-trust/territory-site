@@ -1192,8 +1192,66 @@ button:disabled {
   filter: blur(18px);
   z-index: -1;
 }
+/* === GLOBAL FONT SCALE (MVP) === */
+
+body {
+  font-size: 18px;
+}
+
+/* Заголовки */
+h1 {
+  font-size: 26px;
+  line-height: 1.3;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+/* Обычный текст */
+p,
+label,
+.small-text,
+.helper-text {
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* Поля ввода */
+input,
+textarea {
+  font-size: 18px;
+  padding: 14px 16px;
+}
+
+/* КНОПКИ — ВАЖНО */
+button,
+.btn-main,
+.btn-secondary {
+  font-size: 18px;
+  padding: 14px 18px;
+}
+
+/* Кнопки выбора линии (10 / 50 / 100) */
+.line-btn {
+  font-size: 18px;
+}
+
+/* Очередь участников */
+.queue-item {
+  font-size: 17px;
+}
+
+.queue-item strong {
+  font-size: 18px;
+}
 
   </style>
+
 
 
 
