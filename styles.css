@@ -1697,6 +1697,26 @@ button:disabled {
   text-shadow: none !important;
 }
 
+/* === FIX: финальная кнопка "Помощь отправлена – Далее" === */
+button.disabled,
+.button.disabled,
+.btn.disabled {
+    background: rgba(40, 80, 110, 0.9) !important; /* спокойный тёмно-синий */
+    color: #cfd8e3 !important;                   /* светлый, читаемый текст */
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+}
+
+/* если кнопка всё ещё слишком яркая */
+button.disabled:hover,
+.button.disabled:hover,
+.btn.disabled:hover {
+    background: rgba(40, 80, 110, 0.9) !important;
+}
+
 
 
 
