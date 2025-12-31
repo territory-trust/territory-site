@@ -1800,6 +1800,34 @@ button.attach:hover {
   box-shadow: none !important;
   filter: none !important;
 }
+/* ===== FIX: читаемость кнопки "Прикрепить квитанцию" ===== */
+button,
+label {
+}
+
+/* если кнопка — label или button, усиливаем текст */
+button:has(svg),
+label:has(svg),
+button.upload,
+label.upload,
+button.attach,
+label.attach {
+  font-size: 18px !important;      /* КРУПНЕЕ */
+  font-weight: 800 !important;     /* ЖИРНО */
+  color: #ffffff !important;       /* ЧИСТО БЕЛЫЙ */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important; /* КОНТРАСТ */
+  letter-spacing: 0.3px !important;
+}
+
+/* если has() не поддерживается — запасной вариант */
+label[for],
+button {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+}
+
 
 
 
