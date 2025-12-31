@@ -1265,8 +1265,40 @@ button,
   line-height: 1.45;
   opacity: 0.92;        /* чтобы был читаем, но мягкий */
 }
+/* ===== GOLD DIVIDERS ===== */
+
+.gold-divider {
+  width: 80%;
+  margin: 22px auto;
+  border-radius: 2px;
+}
+
+.gold-divider.triple {
+  height: 6px;
+  background:
+    linear-gradient(
+      to bottom,
+      #f5d77a 0%,
+      #d4af37 33%,
+      #f5d77a 66%,
+      #b8962e 100%
+    );
+  box-shadow: 0 0 12px rgba(212,175,55,0.6);
+}
+
+.gold-divider.double {
+  height: 4px;
+  background:
+    linear-gradient(
+      to bottom,
+      #f5d77a 0%,
+      #d4af37 100%
+    );
+  box-shadow: 0 0 8px rgba(212,175,55,0.5);
+}
 
   </style>
+
 
 
 
