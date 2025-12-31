@@ -1168,8 +1168,17 @@ button:disabled {
   filter: none !important;
   cursor: pointer !important;
 }
+/* 🔥 ПРИНУДИТЕЛЬНАЯ ПОДСВЕТКА КНОПКИ "НАЧАТЬ" */
+#startBtn {
+  background: linear-gradient(180deg, #1da9ff, #0b5ed7) !important;
+  color: #ffd966 !important;
+  opacity: 1 !important;
+  box-shadow: 0 12px 30px rgba(0, 160, 255, 0.6) !important;
+  filter: none !important;
+}
 
   </style>
+
 
 
 
