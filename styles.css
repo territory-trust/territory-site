@@ -1122,8 +1122,23 @@ button *,
   box-shadow: none !important;
   filter: none !important;
 }
+/* Подсветка кнопки "Далее" когда она стала активной */
+.btn-main.is-active {
+  background: linear-gradient(180deg, #2fb9ff, #1a66ff) !important;
+  box-shadow: 0 10px 22px rgba(47,185,255,0.22) !important;
+  filter: saturate(1.08) brightness(1.06) !important;
+}
+
+/* Когда disabled — глушим */
+.btn-main:disabled {
+  opacity: 0.55;
+  filter: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
 
   </style>
+
 
 
 
