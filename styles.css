@@ -1102,8 +1102,15 @@ button *,
   box-shadow: none;
   color: #ffd966;
 }
+/* Принудительно убираем яркую подсветку у кнопки "Правила участия" */
+.buttons button:last-child {
+  background: linear-gradient(180deg, #1c3b52, #132b3d) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
 
   </style>
+
 
 
 
