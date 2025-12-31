@@ -1108,8 +1108,23 @@ button *,
   box-shadow: none !important;
   filter: none !important;
 }
+/* "Правила участия" — как синие кнопки, но без лишнего свечения */
+.btn-rules{
+  background: linear-gradient(180deg, #1c3b52, #132b3d) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.btn-rules:hover,
+.btn-rules:active,
+.btn-rules:focus{
+  box-shadow: none !important;
+  filter: none !important;
+}
 
   </style>
+
 
 
 
