@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Важное предупреждение</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">Важное предупреждение</h1>
+
+      <div class="note" style="line-height:1.6;">
+        Прикрепляйте только скриншот квитанции об оплате.<br><br>
+        Любая подмена (чужие фото, монтаж, неверный файл) может привести к блокировке.
+        <br><br>
+        Если вы согласны — нажмите «Понял, продолжить».
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:18px;">
+        <button class="btn-secondary" id="backBtn" type="button">Назад</button>
+        <button class="btn-main" id="goBtn" type="button">Понял, продолжить</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // сохраняем line (50/10/100) и возвращаемся правильно
+    const params = new URLSearchParams(location.search);
+    const line = params.get("line") || localStorage.getItem("line") || "50";
+    localStorage.setItem("line", line);
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      location.href = "pay.html?line=" + encodeURIComponent(line);
+    });
+
+    document.getElementById("goBtn").addEventListener("click", () => {
+      // TODO: сюда поставить реальный кабинет, когда будет готов
+      location.href = "cabinet.html";
+    });
+  </script>
+</body>
+</html>
