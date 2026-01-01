@@ -195,7 +195,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const receipt = document.getElementById("receiptFile");
   const notify  = document.getElementById("notifyChk");
   const btn     = document.getElementById("sentBtn");
-  // ===== МОДАЛКА ЖЁСТКОГО ПРЕДУПРЕЖДЕНИЯ =====
+  btn.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (btn.disabled) return;
+
+  const line = localStorage.getItem("line") || "50";
+  location.href = "warning.html?line=" + encodeURIComponent(line);
+});
+// ===== МОДАЛКА ЖЁСТКОГО ПРЕДУПРЕЖДЕНИЯ =====
   const modal = document.getElementById("confirmModal");
   const modalYes = document.getElementById("modalYes");
   const modalNo  = document.getElementById("modalNo");
@@ -416,6 +423,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
