@@ -1915,6 +1915,55 @@ button {
   flex: 1;
 }
 
+/* ===== MODAL: confirm before cabinet ===== */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.modal.is-open{ display:block; }
+
+.modal__backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.55);
+}
+
+.modal__dialog{
+  position: relative;
+  width: min(92vw, 420px);
+  margin: 18vh auto 0;
+  padding: 16px 16px 14px;
+  border-radius: 18px;
+  background: rgba(10, 30, 42, .96);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 50px rgba(0,0,0,.55);
+  color: #fff;
+}
+
+.modal__title{
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.modal__text{
+  font-size: 15px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.92);
+}
+
+.modal__actions{
+  display:flex;
+  gap:10px;
+  margin-top: 14px;
+}
+.modal__actions button{
+  flex:1;
+}
+
 
 
 
