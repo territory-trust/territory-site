@@ -1964,6 +1964,11 @@ button {
   flex:1;
 }
 
+/* Кнопка должна быть кликабельной только в active */
+#sentBtn { pointer-events: none; }              /* по умолчанию НЕ кликается */
+#sentBtn.active { pointer-events: auto; }       /* кликается только когда active */
+#sentBtn:disabled { pointer-events: none; }     /* если disabled — точно не кликается */
+
 
 
 
