@@ -334,26 +334,7 @@ function closeModal(){
   modal.setAttribute("aria-hidden", "true");
 }
 
-// Клик по "Далее"
-btn.addEventListener("click", (e) => {
-  e.preventDefault();
 
-  // защита: если уведомления не включены — как и было
-  if (!notify.checked) {
-    notifyRow.classList.add("attention");
-    setTimeout(() => notifyRow.classList.remove("attention"), 2500);
-    return;
-  }
-
-  // защита: если квитанция вдруг не выбрана (хотя у тебя кнопка не активна без файла)
-  if (!receipt.files || receipt.files.length === 0) {
-    // можно подсветить кнопку/поле, но минимум — просто не пускаем
-    return;
-  }
-
-  // Показать модалку ВСЕГДА
-  openModal();
-});
 
 // Кнопки модалки
 modalNo.addEventListener("click", (e) => {
@@ -385,44 +366,12 @@ modal.addEventListener("click", (e) => {
 
 });
 </script>
-<!-- Модальное предупреждение перед входом в кабинет -->
-<div id="confirmModal" class="modal-overlay" aria-hidden="true">
-  <div class="modal">
-    <div class="modal-title">Важное предупреждение</div>
-    <div class="modal-text">
-      Вы уверены, что прикрепили <b>квитанцию об оплате</b>?<br><br>
-      <b>Любые подмены</b> (фото, мемы, картинки вместо квитанции) — это нарушение правил.<br>
-      За такие действия: <b>блокировка аккаунта</b>.
-    </div>
 
-    <div class="modal-actions">
-      <button id="modalYes" class="btn-main">Да</button>
-      <button id="modalNo" class="btn-secondary">Отмена</button>
-    </div>
-  </div>
-</div>
-<!-- Жёсткое предупреждение перед входом в кабинет -->
-<div class="modal" id="confirmModal" aria-hidden="true">
-  <div class="modal__backdrop" data-close="1"></div>
 
-  <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-    <div class="modal__title" id="confirmTitle">Важное предупреждение</div>
-
-    <div class="modal__text">
-      Вы уверены, что прикрепили именно копию квитанции?
-      <br><br>
-      <b>Если вместо квитанции будет загружено любое другое фото — аккаунт будет заблокирован.</b>
-    </div>
-
-    <div class="modal__actions">
-      <button class="btn-main" id="modalYes" type="button">Да</button>
-      <button class="btn-secondary" id="modalNo" type="button">Отмена</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
+
 
 
 
