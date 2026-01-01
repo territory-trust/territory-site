@@ -213,8 +213,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+<!-- Модальное предупреждение перед входом в кабинет -->
+<div id="confirmModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-title">Важное предупреждение</div>
+    <div class="modal-text">
+      Вы уверены, что прикрепили <b>квитанцию об оплате</b>?<br><br>
+      <b>Любые подмены</b> (фото, мемы, картинки вместо квитанции) — это нарушение правил.<br>
+      За такие действия: <b>блокировка аккаунта</b>.
+    </div>
+
+    <div class="modal-actions">
+      <button id="modalYes" class="btn-main">Да</button>
+      <button id="modalNo" class="btn-secondary">Отмена</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
+
 
 
