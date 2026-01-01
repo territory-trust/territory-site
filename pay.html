@@ -93,6 +93,22 @@
       <div class="note" id="resultMsg" style="margin-top:10px;"></div>
     </div>
   </div>
+<!-- ====== Модалка предупреждения ====== -->
+<div id="confirmModal" class="modal" aria-hidden="true">
+  <div class="modal__box">
+    <div class="modal__title">Внимание</div>
+    <div class="modal__text">
+      Вы уверены, что прикрепили копию квитанции?
+      <br><br>
+      В случае нарушения — блокировка.
+    </div>
+
+    <div class="modal__actions">
+      <button id="modalYes" class="btn-main">Да</button>
+      <button id="modalNo" class="btn-secondary">Отмена</button>
+    </div>
+  </div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -283,6 +299,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
