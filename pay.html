@@ -207,6 +207,60 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add("ready");
       btn.disabled = false;
     }
+      // ===== Модалка жёсткого предупреждения =====
+  const modal = document.getElementById("confirmModal");
+  const modalYes = document.getElementById("modalYes");
+  const modalNo  = document.getElementById("modalNo");
+
+  function openModal(){
+    if (!modal) return;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal(){
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  // Клик по "Далее" -> всегда открываем модалку (когда кнопка уже активна)
+  if (btn) {
+    btn.addEventListener("click", (e) => {
+      // если кнопка вдруг disabled — ничего не делаем
+      if (btn.disabled) return;
+
+      e.preventDefault();
+      openModal();
+    });
+  }
+
+  // "Да" -> переход в кабинет
+  if (modalYes) {
+    modalYes.addEventListener("click", () => {
+      closeModal();
+
+      // ВАЖНО: тут поставь свой реальный файл кабинета
+      // например: cabinet.html / account.html / profile.html
+      window.location.href = "cabinet.html";
+    });
+  }
+
+  // "Отмена" -> закрыть
+  if (modalNo) modalNo.addEventListener("click", closeModal);
+
+  // Клик по фону (затемнению) -> закрыть
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
+    });
+  }
+
+  // ESC -> закрыть
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
   });
 
   // ====== Модалка жёсткого предупреждения ======
@@ -318,6 +372,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
