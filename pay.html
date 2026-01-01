@@ -231,8 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btn.disabled) return;
 
       e.preventDefault();
-      alert("Клик по Далее работает");
-
+      if (confirm("Вы уверены, что прикрепили копию квитанции?\n\nВ случае нарушения — блокировка.")) {
+  window.location.href = "cabinet.html";
+}
     });
   }
 
@@ -373,6 +374,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
