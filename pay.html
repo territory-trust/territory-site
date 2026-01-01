@@ -193,13 +193,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. Клик по кнопке без уведомлений
-  btn.addEventListener("click", (e) => {
-    if (!notify.checked) {
-      e.preventDefault();
-      notifyRow.classList.add("attention");
-      setTimeout(() => notifyRow.classList.remove("attention"), 2500);
-    }
+  // ====== Модалка жёсткого предупреждения ======
+const modal = document.getElementById("confirmModal");
+const modalYes = document.getElementById("modalYes");
+const modalNo  = document.getElementById("modalNo");
+
+// КУДА вести после "Да" (поменяешь на свой кабинет)
+const CABINET_URL = "queue.html"; // <-- если кабинет будет другим, поменяй тут
+
+function openModal(){
+  if(!modal) return;
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeModal(){
+  if(!modal) return;
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+// Клик по "Далее"
+btn.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // защита: если уведомления не включены — как и было
+  if (!notify.checked) {
+    notifyRow.classList.add("attention");
+    setTimeout(() => notifyRow.classList.remove("attention"), 2500);
+    return;
+  }
+
+  // защита: если квитанция вдруг не выбрана (хотя у тебя кнопка не активна без файла)
+  if (!receipt.files || receipt.files.length === 0) {
+    // можно подсветить кнопку/поле, но минимум — просто не пускаем
+    return;
+  }
+
+  // Показать модалку ВСЕГДА
+  openModal();
+});
+
+// Кнопки модалки
+modalNo.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeModal();
+});
+
+modalYes.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeModal();
+  window.location.href = CABINET_URL;
+});
+
+// Клик по фону — закрыть
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) closeModal();
+});
+
   });
 
   // 3. Включили уведомления → кнопка активна
@@ -232,6 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
