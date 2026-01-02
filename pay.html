@@ -227,72 +227,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // "Да" -> переход в кабинет
-  if (modalYes) {
-    modalYes.addEventListener("click", () => {
-      closeModal();
-
-      // ВАЖНО: тут поставь свой реальный файл кабинета
-      // например: cabinet.html / account.html / profile.html
-      window.location.href = "cabinet.html";
-    });
-  }
-
-  // "Отмена" -> закрыть
-  if (modalNo) modalNo.addEventListener("click", closeModal);
-
-  // Клик по фону (затемнению) -> закрыть
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
-    });
-  }
-
-  // ESC -> закрыть
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
-
+ 
+ 
   });
 
   // ====== Модалка жёсткого предупреждения ======
 const modal = document.getElementById("confirmModal");
 const modalYes = document.getElementById("modalYes");
 const modalNo  = document.getElementById("modalNo");
-
-// КУДА вести после "Да" (поменяешь на свой кабинет)
-const CABINET_URL = "queue.html"; // <-- если кабинет будет другим, поменяй тут
-
-function openModal(){
-  if(!modal) return;
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden", "false");
-}
-
-function closeModal(){
-  if(!modal) return;
-  modal.classList.remove("show");
-  modal.setAttribute("aria-hidden", "true");
-}
-
-
-
-// Кнопки модалки
-modalNo.addEventListener("click", (e) => {
-  e.preventDefault();
-  closeModal();
-});
-
-modalYes.addEventListener("click", (e) => {
-  e.preventDefault();
-  closeModal();
-  window.location.href = CABINET_URL;
-});
-
-// Клик по фону — закрыть
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) closeModal();
-});
 
   });
 
@@ -308,10 +250,9 @@ modal.addEventListener("click", (e) => {
 });
 </script>
 
-
-
 </body>
 </html>
+
 
 
 
