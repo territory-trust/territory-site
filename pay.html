@@ -199,32 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const line = localStorage.getItem("line") || "50";
   location.href = "warning.html?line=" + encodeURIComponent(line);
 });
-// ===== МОДАЛКА ЖЁСТКОГО ПРЕДУПРЕЖДЕНИЯ =====
-  
-
-  function closeModal() {
-    if (!modal) return;
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
-  }
-
-  // Клик по "Далее" -> всегда открываем модалку (если кнопка активна)
-  if (btn) {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (btn.disabled) return;     // если disabled — молчим
-      openModal();                  // показываем жёсткое предупреждение
-    });
-  }
-
-  // "Да" -> переход в кабинет
-  if (modalYes) {
-    modalYes.addEventListener("click", () => {
-      closeModal();
-      window.location.href = "cabinet.html"; // <-- твой файл кабинета
-    });
-  }
-
 
   const notifyRow = notify.closest(".checkRow");
 
@@ -238,22 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add("ready");
       btn.disabled = false;
     }
-      // ===== Модалка жёсткого предупреждения =====
-  const modal = document.getElementById("confirmModal");
-  const modalYes = document.getElementById("modalYes");
-  const modalNo  = document.getElementById("modalNo");
-
-  function openModal(){
-    if (!modal) return;
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-  }
-
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-  }
+      
 
   // Клик по "Далее" -> всегда открываем модалку (когда кнопка уже активна)
   if (btn) {
@@ -353,6 +312,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
