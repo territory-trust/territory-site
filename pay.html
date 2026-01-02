@@ -224,69 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </div>
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
 
-  const receipt = document.getElementById("receiptFile");
-  const notify  = document.getElementById("notifyChk");
-  const btn     = document.getElementById("sentBtn");
-  btn.addEventListener("click", (e) => {
-  e.preventDefault();
-  if (btn.disabled) return;
-
-  const line = localStorage.getItem("line") || "50";
-  location.href = "warning.html?line=" + encodeURIComponent(line);
-});
-
-  const notifyRow = notify.closest(".checkRow");
-
-  // стартовое состояние
-  btn.classList.add("waiting");
-
-  // 1. Прикрепили квитанцию
-  receipt.addEventListener("change", () => {
-    if (receipt.files.length > 0) {
-      btn.classList.remove("waiting");
-      btn.classList.add("ready");
-      btn.disabled = false;
-    }
-      
-
-  // Клик по "Далее" -> всегда открываем модалку (когда кнопка уже активна)
-  if (btn) {
-    btn.addEventListener("click", (e) => {
-      // если кнопка вдруг disabled — ничего не делаем
-      if (btn.disabled) return;
-
-      e.preventDefault();
-      if (confirm("Вы уверены, что прикрепили копию квитанции?\n\nВ случае нарушения — блокировка.")) {
-  window.location.href = "cabinet.html";
-}
-    });
-  }
-
- 
- 
-  });
-
-  // ====== Модалка жёсткого предупреждения ======
-const modal = document.getElementById("confirmModal");
-const modalYes = document.getElementById("modalYes");
-const modalNo  = document.getElementById("modalNo");
-
-  });
-
-  // 3. Включили уведомления → кнопка активна
-  notify.addEventListener("change", () => {
-    if (notify.checked && receipt.files.length > 0) {
-      btn.classList.remove("ready");
-      btn.classList.add("active");
-      btn.disabled = false;
-    }
-  });
-
-});
-</script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("btnNext");
@@ -305,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
