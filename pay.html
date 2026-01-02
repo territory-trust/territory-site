@@ -103,10 +103,7 @@
       В случае нарушения — блокировка.
     </div>
 
-    <div class="modal__actions">
-      <button id="modalYes" class="btn-main">Да</button>
-      <button id="modalNo" class="btn-secondary">Отмена</button>
-    </div>
+    
   </div>
 </div>
 
@@ -203,15 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
   location.href = "warning.html?line=" + encodeURIComponent(line);
 });
 // ===== МОДАЛКА ЖЁСТКОГО ПРЕДУПРЕЖДЕНИЯ =====
-  const modal = document.getElementById("confirmModal");
-  const modalYes = document.getElementById("modalYes");
-  const modalNo  = document.getElementById("modalNo");
-
-  function openModal() {
-    if (!modal) return alert("Нет confirmModal в HTML");
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-  }
+  
 
   function closeModal() {
     if (!modal) return;
@@ -236,13 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // "Отмена" -> закрыть
-  if (modalNo) modalNo.addEventListener("click", closeModal);
-
-  // клик по фону модалки -> закрыть
-  if (modal) modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
 
   const notifyRow = notify.closest(".checkRow");
 
@@ -371,6 +353,7 @@ modal.addEventListener("click", (e) => {
 
 </body>
 </html>
+
 
 
 
