@@ -76,14 +76,12 @@
 
       <!-- Уведомления -->
       <div class="box">
-        <div class="checkRow">
-          <input id="notifyChk" type="checkbox" />
-          <div>
-            <div>🔔 Включить уведомления о подтверждении помощи и движении очереди</div>
-            
+  <div class="checkRow" id="notifyRow">
+    <input id="notifyChk" type="checkbox" />
+    <div>🔔 Включить уведомления о подтверждении помощи и движении очереди</div>
+  </div>
+</div>
 
-           </div>
-        </div>
       </div>
 
       <!-- Действия -->
@@ -128,29 +126,69 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ====== FILE + имя файла + активация "Я отправил помощь" ======
-  const fileInput = document.getElementById("receiptFile");
-  const nameBox   = document.getElementById("fileName");
-  const sentBtn   = document.getElementById("sentBtn");
-  const notifyChk = document.getElementById("notifyChk");
+// ===== ЛОГИКА КНОПКИ "ДАЛЕЕ" =====
 
-  function refreshSentBtn() {
-    const hasFile = !!(fileInput && fileInput.files && fileInput.files.length > 0);
-    const notifyOk = !notifyChk || notifyChk.checked; // если чекбокса нет — считаем ок
-    if (sentBtn) sentBtn.disabled = !(hasFile && notifyOk);
+const btnNext = document.getElementById("btnNext");
+const receiptFile = document.getElementById("receiptFile");
+const fileNameBox = document.getElementById("fileName");
+
+const notifyChk = document.getElementById("notifyChk");
+const notifyRow = document.getElementById("notifyRow");
+
+// 1. Кнопка становится активной ТОЛЬКО после выбора файла
+function refreshNextBtn() {
+  const hasFile = !!(receiptFile && receiptFile.files && receiptFile.files.length > 0);
+  if (btnNext) {
+    btnNext.disabled = !hasFile;
+    btnNext.classList.toggle("active", hasFile);
   }
+}
 
-  if (fileInput) {
-    fileInput.addEventListener("change", () => {
-      if (nameBox) nameBox.textContent = fileInput.files[0] ? fileInput.files[0].name : "Файл не выбран.";
-      refreshSentBtn();
-    });
+// 2. Подсветка блока уведомлений
+function highlightNotify(on) {
+  if (!notifyRow) return;
+  notifyRow.classList.toggle("need-attention", on);
+  if (on) {
+    notifyRow.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+}
 
-  if (notifyChk) notifyChk.addEventListener("change", refreshSentBtn);
+// 3. Загрузка файла
+if (receiptFile) {
+  receiptFile.addEventListener("change", () => {
+    if (fileNameBox) {
+      fileNameBox.textContent = receiptFile.files[0]
+        ? receiptFile.files[0].name
+        : "";
+    }
+    refreshNextBtn();
+  });
+}
 
-  refreshSentBtn();
-});
+// 4. Клик по "Далее"
+if (btnNext) {
+  btnNext.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    // если уведомления не включены — НЕ ПЕРЕХОДИМ
+    if (!notifyChk || !notifyChk.checked) {
+      highlightNotify(true);
+      return;
+    }
+
+    // всё ок — переход
+    const params = new URLSearchParams(location.search);
+    const line =
+      params.get("line") || localStorage.getItem("line") || "50";
+
+    localStorage.setItem("line", line);
+    location.href = "warning.html?line=" + encodeURIComponent(line);
+  });
+}
+
+// стартовое состояние
+refreshNextBtn();
+
 </script>
 
 <script>
@@ -267,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
