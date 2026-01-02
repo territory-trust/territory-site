@@ -193,13 +193,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // 2. Клик по кнопке без уведомлений
-  btn.addEventListener("click", (e) => {
-    if (!notify.checked) {
-      e.preventDefault();
-      notifyRow.classList.add("attention");
-      setTimeout(() => notifyRow.classList.remove("attention"), 2500);
-    }
-  });
+btn.addEventListener('click', (e) => {
+  e.preventDefault();
+
+  // если кнопка выключена — ничего не делаем
+  if (btn.disabled) return;
+
+  // если уведомления НЕ включены — подсвечиваем блок и НЕ переходим
+  if (!notify.checked) {
+    notifyRow.classList.add('attention');
+    notifyRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => notifyRow.classList.remove('attention'), 2500);
+    return;
+  }
+
+  // уведомления включены — переходим на предупреждение
+  const line = localStorage.getItem('line') || '50';
+  location.href = `warning.html?line=${encodeURIComponent(line)}`;
+});
+
 
   // 3. Включили уведомления → кнопка активна
   notify.addEventListener("change", () => {
@@ -215,5 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
