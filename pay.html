@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <head>
@@ -44,10 +44,9 @@
 <!-- инструкция -->
 <div class="box">
   <div class="note">
-    <div class="noteTitle">Инструкция по оплате:</div>
+    <div class="noteTitle">Инструкция по оплате</div>
     <ol class="steps">
-      <li>Переведите сумму на карту участника №1,
-используя приложение вашего банка.</li>
+      <li>Переведите сумму на карту участника №1 (получателя).</li>
       <li>В назначении платежа укажите: <b>«Помощь»</b>.</li>
       <li>После оплаты прикрепите скриншот квитанции для подтверждения.</li>
     </ol>
@@ -76,34 +75,23 @@
 
       <!-- Уведомления -->
       <div class="box">
-  <div class="checkRow" id="notifyRow">
-    <input id="notifyChk" type="checkbox" />
-    <div>🔔 Включить уведомления о подтверждении помощи и движении очереди</div>
-  </div>
-</div>
+        <div class="checkRow">
+          <input id="notifyChk" type="checkbox" />
+          <div>
+            <div>🔔 Включить уведомления о подтверждении помощи и движении очереди</div>
+            
 
+           </div>
+        </div>
       </div>
 
       <!-- Действия -->
-      <button class="btn-main" id="btnNext" disabled>Далее</button>
+      <button class="btn-main" id="sentBtn" disabled>Помощь отправлена - Далее</button>
       <button class="btn-secondary" onclick="history.back()">Назад</button>
 
       <div class="note" id="resultMsg" style="margin-top:10px;"></div>
     </div>
   </div>
-<!-- ====== Модалка предупреждения ====== -->
-<div id="confirmModal" class="modal" aria-hidden="true">
-  <div class="modal__box">
-    <div class="modal__title">Внимание</div>
-    <div class="modal__text">
-      Вы уверены, что прикрепили копию квитанции?
-      <br><br>
-      В случае нарушения — блокировка.
-    </div>
-
-    
-  </div>
-</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -126,69 +114,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-// ===== ЛОГИКА КНОПКИ "ДАЛЕЕ" =====
+  // ====== FILE + имя файла + активация "Я отправил помощь" ======
+  const fileInput = document.getElementById("receiptFile");
+  const nameBox   = document.getElementById("fileName");
+  const sentBtn   = document.getElementById("sentBtn");
+  const notifyChk = document.getElementById("notifyChk");
 
-const btnNext = document.getElementById("btnNext");
-const receiptFile = document.getElementById("receiptFile");
-const fileNameBox = document.getElementById("fileName");
-
-const notifyChk = document.getElementById("notifyChk");
-const notifyRow = document.getElementById("notifyRow");
-
-// 1. Кнопка становится активной ТОЛЬКО после выбора файла
-function refreshNextBtn() {
-  const hasFile = !!(receiptFile && receiptFile.files && receiptFile.files.length > 0);
-  if (btnNext) {
-    btnNext.disabled = !hasFile;
-    btnNext.classList.toggle("active", hasFile);
+  function refreshSentBtn() {
+    const hasFile = !!(fileInput && fileInput.files && fileInput.files.length > 0);
+    const notifyOk = !notifyChk || notifyChk.checked; // если чекбокса нет — считаем ок
+    if (sentBtn) sentBtn.disabled = !(hasFile && notifyOk);
   }
-}
 
-// 2. Подсветка блока уведомлений
-function highlightNotify(on) {
-  if (!notifyRow) return;
-  notifyRow.classList.toggle("need-attention", on);
-  if (on) {
-    notifyRow.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (fileInput) {
+    fileInput.addEventListener("change", () => {
+      if (nameBox) nameBox.textContent = fileInput.files[0] ? fileInput.files[0].name : "Файл не выбран.";
+      refreshSentBtn();
+    });
   }
-}
 
-// 3. Загрузка файла
-if (receiptFile) {
-  receiptFile.addEventListener("change", () => {
-    if (fileNameBox) {
-      fileNameBox.textContent = receiptFile.files[0]
-        ? receiptFile.files[0].name
-        : "";
-    }
-    refreshNextBtn();
-  });
-}
+  if (notifyChk) notifyChk.addEventListener("change", refreshSentBtn);
 
-// 4. Клик по "Далее"
-if (btnNext) {
-  btnNext.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    // если уведомления не включены — НЕ ПЕРЕХОДИМ
-    if (!notifyChk || !notifyChk.checked) {
-      highlightNotify(true);
-      return;
-    }
-
-    // всё ок — переход
-    const params = new URLSearchParams(location.search);
-    const line =
-      params.get("line") || localStorage.getItem("line") || "50";
-
-    localStorage.setItem("line", line);
-    location.href = "warning.html?line=" + encodeURIComponent(line);
-  });
-}
-
-// стартовое состояние
-refreshNextBtn();
-
+  refreshSentBtn();
+});
 </script>
 
 <script>
@@ -224,41 +172,46 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </div>
 </div>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("btnNext");
-  if (!btn) return;
 
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
+  const receipt = document.getElementById("receiptFile");
+  const notify  = document.getElementById("notifyChk");
+  const btn     = document.getElementById("sentBtn");
+  const notifyRow = notify.closest(".checkRow");
 
-    const line = localStorage.getItem("line") || "50";
+  // стартовое состояние
+  btn.classList.add("waiting");
 
-    window.location.href =
-      "warning.html?line=" + encodeURIComponent(line);
+  // 1. Прикрепили квитанцию
+  receipt.addEventListener("change", () => {
+    if (receipt.files.length > 0) {
+      btn.classList.remove("waiting");
+      btn.classList.add("ready");
+      btn.disabled = false;
+    }
   });
+
+  // 2. Клик по кнопке без уведомлений
+  btn.addEventListener("click", (e) => {
+    if (!notify.checked) {
+      e.preventDefault();
+      notifyRow.classList.add("attention");
+      setTimeout(() => notifyRow.classList.remove("attention"), 2500);
+    }
+  });
+
+  // 3. Включили уведомления → кнопка активна
+  notify.addEventListener("change", () => {
+    if (notify.checked && receipt.files.length > 0) {
+      btn.classList.remove("ready");
+      btn.classList.add("active");
+      btn.disabled = false;
+    }
+  });
+
 });
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
