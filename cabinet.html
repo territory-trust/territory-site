@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Личный кабинет</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">Личный кабинет</h1>
+
+      <div class="note" id="whoNote" style="line-height:1.6;"></div>
+
+      <!-- Переключатель линий -->
+      <div style="display:flex; gap:10px; margin:16px 0;">
+        <button class="btn-secondary" id="tab10">10 ₴</button>
+        <button class="btn-secondary" id="tab50">50 ₴</button>
+        <button class="btn-secondary" id="tab100">100 ₴</button>
+      </div>
+
+      <!-- Блок линии -->
+      <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
+
+      <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
+
+      <!-- Кнопки действий (активность зависит от статуса) -->
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
+        <button class="btn-main" id="btnWait" disabled>Ожидаем подтверждения</button>
+        <button class="btn-main" id="btnTake3" disabled>Занять 3-е место</button>
+        <button class="btn-main" id="btnConfirm" disabled>Подтвердить помощь</button>
+        <button class="btn-secondary" id="btnReject" disabled>Отклонить</button>
+      </div>
+
+      <!-- Если не участвует в линии -->
+      <div id="joinBox" style="display:none; margin-top:16px;">
+        <div class="note" style="line-height:1.6;">
+          В этой линии вы пока не участвуете.
+        </div>
+        <button class="btn-main" id="btnGoQueue" style="margin-top:10px;">
+          Перейти в «Очередь участников»
+        </button>
+      </div>
+
+      <!-- Дерево приглашённых (2 уровня) -->
+      <div style="margin-top:18px;">
+        <div class="note" style="font-weight:700; margin-bottom:8px;">Дерево приглашённых (2 уровня)</div>
+        <div class="note" id="treeBox" style="line-height:1.6;"></div>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-secondary" id="btnPromo">Рекламные материалы</button>
+        <button class="btn-secondary" id="btnBackQueue">Очередь участников</button>
+      </div>
+
+      <div class="note" id="msg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // ====== helpers ======
+    const qs = (s) => document.querySelector(s);
+
+    const LINES = [10, 50, 100];
+
+    function getParams() {
+      const p = new URLSearchParams(location.search);
+      return {
+        ref: p.get("ref") || "",
+        line: Number(p.get("line") || 0)
+      };
+    }
+
+    // Хранилище статусов по линиям (MVP на localStorage)
+    // statuses: none | candidate_waiting | confirmed_can_take3 | member
+    function readState() {
+      try {
+        return JSON.parse(localStorage.getItem("cabinet_state") || "{}");
+      } catch {
+        return {};
+      }
+    }
+    function writeState(state) {
+      localStorage.setItem("cabinet_state", JSON.stringify(state));
+    }
+
+    // Стартовый "разумный" дефолт
+    function ensureDefaults() {
+      const state = readState();
+      if (!state.lines) state.lines = {};
+      for (const line of LINES) {
+        if (!state.lines[String(line)]) {
+          state.lines[String(line)] = {
+            status: "none",
+            // дерево приглашённых — пока заглушки
+            tree: {
+              level1: [],
+              level2: []
+            }
+          };
+        }
+      }
+      writeState(state);
+    }
+
+    function setActiveLine(line) {
+      localStorage.setItem("active_line", String(line));
+      render(line);
+    }
+
+    function getActiveLine() {
+      const saved = Number(localStorage.getItem("active_line") || 0);
+      if (LINES.includes(saved)) return saved;
+      return 50; // дефолт как у тебя часто на скринах
+    }
+
+    function setButtonsEnabled({wait, take3, confirm, reject}) {
+      qs("#btnWait").disabled = !wait;
+      qs("#btnTake3").disabled = !take3;
+      qs("#btnConfirm").disabled = !confirm;
+      qs("#btnReject").disabled = !reject;
+    }
+
+    function setTabActive(line) {
+      for (const l of LINES) {
+        const btn = qs("#tab" + l);
+        // активную делаем как "btn-main", остальные как "btn-secondary"
+        btn.className = (l === line) ? "btn-main" : "btn-secondary";
+      }
+    }
+
+    function renderTree(tree) {
+      const l1 = tree?.level1 || [];
+      const l2 = tree?.level2 || [];
+
+      const fmt = (arr) => arr.length ? arr.map((x, i) => `${i+1}) ${x}`).join("<br>") : "— пока пусто —";
+
+      return `
+        <div><b>Уровень 1</b> (приглашённые вами):<br>${fmt(l1)}</div>
+        <br>
+        <div><b>Уровень 2</b> (приглашённые вашими приглашёнными):<br>${fmt(l2)}</div>
+      `;
+    }
+
+    // ====== main render ======
+    function render(line) {
+      const state = readState();
+      const data = state.lines[String(line)];
+      const status = data.status;
+
+      setTabActive(line);
+
+      qs("#lineTitle").textContent = `Линия: ${line} ₴`;
+
+      // Показываем / скрываем блок "войти в линию"
+      const isNone = status === "none";
+      qs("#joinBox").style.display = isNone ? "block" : "none";
+
+      // Статусы и кнопки
+      if (isNone) {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>не участвуете</b><br>Чтобы создать кабинет в этой линии — пройдите процедуру через «Очередь участников».`;
+
+        setButtonsEnabled({wait:false, take3:false, confirm:false, reject:false});
+      }
+
+      if (status === "candidate_waiting") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>кандидат</b><br>Ожидаем подтверждения от получателя №1.<br><span style="opacity:.85;">(таймер подключим позже)</span>`;
+
+        // активна только "Ожидаем..." как индикатор
+        setButtonsEnabled({wait:true, take3:false, confirm:false, reject:false});
+      }
+
+      if (status === "confirmed_can_take3") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>подтверждено</b><br>Теперь можно нажать «Занять 3-е место» и создать свою личную тройку в этой линии.`;
+
+        setButtonsEnabled({wait:false, take3:true, confirm:false, reject:false});
+      }
+
+      if (status === "member") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>участник</b><br>У вас есть личная тройка в этой линии и ваша реф-ссылка ведёт на визитку.`;
+
+        // для участника тут пока ничего не нажимается
+        setButtonsEnabled({wait:false, take3:false, confirm:false, reject:false});
+      }
+
+      // Дерево
+      qs("#treeBox").innerHTML = renderTree(data.tree);
+
+      qs("#msg").textContent = "";
+    }
+
+    // ====== actions (MVP-эмуляция) ======
+    function showMsg(t) {
+      qs("#msg").textContent = t;
+    }
+
+    function setStatus(line, status) {
+      const state = readState();
+      state.lines[String(line)].status = status;
+      writeState(state);
+      render(line);
+    }
+
+    // ====== init ======
+    (function init() {
+      ensureDefaults();
+
+      const { ref, line } = getParams();
+
+      // ref — это "владелец кабинета". Его сохраняем и используем в promo.
+      if (ref) localStorage.setItem("ref", ref);
+
+      const myRef = localStorage.getItem("ref") || "";
+      qs("#whoNote").innerHTML = myRef
+        ? `Ваш ID (ref): <b>${myRef}</b>`
+        : `Ваш ID (ref): <b>не задан</b><br><span style="opacity:.85;">(для теста можно зайти так: cabinet.html?ref=TEST123)</span>`;
+
+      // активная линия: из URL или сохранённая
+      const active = LINES.includes(line) ? line : getActiveLine();
+      setActiveLine(active);
+
+      // табы
+      qs("#tab10").addEventListener("click", () => setActiveLine(10));
+      qs("#tab50").addEventListener("click", () => setActiveLine(50));
+      qs("#tab100").addEventListener("click", () => setActiveLine(100));
+
+      // переходы
+      qs("#btnPromo").addEventListener("click", () => {
+        const r = localStorage.getItem("ref") || "";
+        location.href = `promo.html${r ? `?ref=${encodeURIComponent(r)}` : ""}`;
+      });
+
+      qs("#btnBackQueue").addEventListener("click", () => {
+        const r = localStorage.getItem("ref") || "";
+        location.href = `queue.html${r ? `?ref=${encodeURIComponent(r)}` : ""}`;
+      });
+
+      qs("#btnGoQueue").addEventListener("click", () => {
+        const r = localStorage.getItem("ref") || "";
+        const l = getActiveLine();
+        location.href = `queue.html?line=${encodeURIComponent(l)}${r ? `&ref=${encodeURIComponent(r)}` : ""}`;
+      });
+
+      // Кнопки действий (пока как тестовые переключатели статуса)
+      // Потом эти места заменишь на реальную логику Supabase.
+      qs("#btnTake3").addEventListener("click", () => {
+        const l = getActiveLine();
+        setStatus(l, "member");
+        showMsg("✅ Тест: вы стали участником в этой линии (дальше будет реальный сдвиг/создание тройки).");
+      });
+
+      // Эти две кнопки по твоей схеме нужны №1 получателю (в будущем)
+      qs("#btnConfirm").addEventListener("click", () => {
+        const l = getActiveLine();
+        setStatus(l, "confirmed_can_take3");
+        showMsg("✅ Тест: подтверждение получено, можно «Занять 3-е место».");
+      });
+
+      qs("#btnReject").addEventListener("click", () => {
+        const l = getActiveLine();
+        setStatus(l, "none");
+        showMsg("⛔ Тест: отклонено (сброс участия в линии).");
+      });
+
+    })();
+  </script>
+</body>
+</html>
