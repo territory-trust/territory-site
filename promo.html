@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Рекламные материалы</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">Рекламные материалы</h1>
+
+      <div class="note" style="line-height:1.6;">
+        Ваша реф-ссылка ведёт на <b>визитку</b> (стартовую страницу).
+        Человек увидит визитку → нажмёт «Начать» → попадёт в вашу личную «Очередь участников».
+      </div>
+
+      <div class="note" id="refBox" style="margin-top:12px; line-height:1.6;"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <button class="btn-main" id="btnCopy">Скопировать ссылку</button>
+        <button class="btn-secondary" id="btnOpen">Открыть</button>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="note" style="font-weight:700; margin-bottom:8px;">QR-код</div>
+        <img id="qr" alt="QR" style="width:200px; height:200px; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.25);" />
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-secondary" id="btnCabinet">В кабинет</button>
+        <button class="btn-secondary" id="btnQueue">Очередь участников</button>
+      </div>
+
+      <div class="note" id="msg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const qs = (s) => document.querySelector(s);
+
+    const params = new URLSearchParams(location.search);
+    const refFromUrl = params.get("ref") || "";
+    if (refFromUrl) localStorage.setItem("ref", refFromUrl);
+
+    const ref = localStorage.getItem("ref") || "";
+
+    const base = location.origin + location.pathname.replace(/\/[^\/]*$/, "/");
+    // Реф-ссылка ведёт на визитку:
+    const link = ref ? `${base}index.html?ref=${encodeURIComponent(ref)}` : `${base}index.html`;
+
+    qs("#refBox").innerHTML = ref
+      ? `Ваш ID (ref): <b>${ref}</b><br>Ссылка: <b style="word-break:break-all;">${link}</b>`
+      : `ID (ref) не задан.<br><span style="opacity:.85;">Зайдите так: promo.html?ref=TEST123</span>`;
+
+    // QR (через публичный генератор)
+    qs("#qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
+
+    qs("#btnCopy").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(link);
+        qs("#msg").textContent = "✅ Ссылка скопирована.";
+      } catch (e) {
+        // запасной вариант
+        const t = document.createElement("textarea");
+        t.value = link;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand("copy");
+        document.body.removeChild(t);
+        qs("#msg").textContent = "✅ Ссылка скопирована (через запасной метод).";
+      }
+    });
+
+    qs("#btnOpen").addEventListener("click", () => {
+      window.open(link, "_blank");
+    });
+
+    qs("#btnCabinet").addEventListener("click", () => {
+      location.href = `cabinet.html${ref ? `?ref=${encodeURIComponent(ref)}` : ""}`;
+    });
+
+    qs("#btnQueue").addEventListener("click", () => {
+      location.href = `queue.html${ref ? `?ref=${encodeURIComponent(ref)}` : ""}`;
+    });
+  </script>
+</body>
+</html>
