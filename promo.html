@@ -51,7 +51,10 @@
 
     const base = location.origin + location.pathname.replace(/\/[^\/]*$/, "/");
     // Реф-ссылка ведёт на визитку:
-    const link = ref ? `${base}index.html?ref=${encodeURIComponent(ref)}` : `${base}index.html`;
+   const link = ref
+  ? `${location.origin}/territory-site/?ref=${encodeURIComponent(ref)}`
+  : `${location.origin}/territory-site/`;
+
 
     qs("#refBox").innerHTML = ref
       ? `Ваш ID (ref): <b>${ref}</b><br>Ссылка: <b style="word-break:break-all;">${link}</b>`
