@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Админка</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .wrap { max-width: 920px; margin: 0 auto; padding: 24px 14px; }
+    .card { background: rgba(0,0,0,.25); border-radius: 24px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+    .kpi { padding: 14px; border-radius: 18px; background: rgba(255,255,255,.06); }
+    .kpi b { font-size: 22px; display:block; margin-top: 6px; }
+    .muted { opacity: .75; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin:0 0 8px;">Админ-панель</h1>
+      <div class="muted" id="who"></div>
+
+      <div class="grid">
+        <div class="kpi">Всего участников<b id="kUsers">—</b></div>
+        <div class="kpi">Всего троек<b id="kTriples">—</b></div>
+        <div class="kpi">Ожидают подтверждения<b id="kWait">—</b></div>
+        <div class="kpi">Подтверждено<b id="kOk">—</b></div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-secondary" id="btnSeed">Сгенерировать тест-данные</button>
+        <button class="btn-secondary" id="btnClear">Сбросить тест-данные</button>
+        <button class="btn-secondary" id="btnLogout">Выйти</button>
+      </div>
+
+      <div class="muted" style="margin-top:14px; line-height:1.5;">
+        ⚠️ MVP-режим: цифры сейчас берём из localStorage (заглушки).
+        Настоящая админка будет после Supabase (Auth + роли + RLS).
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const qs = (s) => document.querySelector(s);
+
+    // 1) Защита: если не админ — на логин
+    if (localStorage.getItem("is_admin") !== "true") {
+      location.href = "admin-login.html?next=admin.html";
+    }
+
+    // 2) Хранилище для демо-статы
+    const KEY = "admin_stats_demo";
+    function readStats() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+      catch { return {}; }
+    }
+    function writeStats(s) {
+      localStorage.setItem(KEY, JSON.stringify(s));
+    }
+
+    function render() {
+      const s = readStats();
+      qs("#kUsers").textContent = s.users ?? 0;
+      qs("#kTriples").textContent = s.triples ?? 0;
+      qs("#kWait").textContent = s.wait ?? 0;
+      qs("#kOk").textContent = s.ok ?? 0;
+
+      const at = localStorage.getItem("admin_login_at");
+      qs("#who").textContent = at ? ("Вход выполнен: " + at) : "Вход выполнен.";
+    }
+
+    qs("#btnSeed").addEventListener("click", () => {
+      // простая демо-генерация
+      writeStats({
+        users: 120 + Math.floor(Math.random()*80),
+        triples: 30 + Math.floor(Math.random()*40),
+        wait: 2 + Math.floor(Math.random()*10),
+        ok: 20 + Math.floor(Math.random()*20),
+      });
+      render();
+    });
+
+    qs("#btnClear").addEventListener("click", () => {
+      localStorage.removeItem(KEY);
+      render();
+    });
+
+    qs("#btnLogout").addEventListener("click", () => {
+      localStorage.removeItem("is_admin");
+      localStorage.removeItem("admin_login_at");
+      location.href = "index.html";
+    });
+
+    render();
+  </script>
+</body>
+</html>
