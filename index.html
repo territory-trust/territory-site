@@ -31,15 +31,25 @@
 </div>
 
 
-  <script>
-    document.getElementById("startBtn").addEventListener("click", () => {
-      // куда ведёт старт — поставь нужную страницу
-      location.href = "queue.html";
-    });
-  </script>
-</body>
+<script>
+  // 1. Сохраняем ref владельца, если зашли по реф-ссылке
+  const params = new URLSearchParams(location.search);
+  const refOwner = params.get("ref");
+  if (refOwner) {
+    localStorage.setItem("ref_owner", refOwner);
+  }
 
+  // 2. Кнопка "Начать" ведёт в очередь владельца
+  document.getElementById("startBtn").addEventListener("click", () => {
+    const owner = localStorage.getItem("ref_owner") || "";
+    location.href = "queue.html" + (owner ? `?ref=${encodeURIComponent(owner)}` : "");
+  });
+</script>
+
+  
+</body>
 </html>
+
 
 
 
