@@ -1,2052 +1,240 @@
-
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
-
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: #fff;
-  min-height: 100vh;
-  
-}
-
-
-.wrap {
-  width: 100%;
-  max-width: 480px;
-  padding: 16px;
-  box-sizing: border-box;
-  margin: 0 auto;
-
-}
-
-    .card {
-      background: rgba(0,0,0,0.45);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    }
-
-    h1 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      opacity: 0.8;
-      margin-bottom: 12px;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 8px 0;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(0,0,0,0.25);
-      color: #fff;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background: #00c6ff;
-      color: #000;
-      border-color: #00c6ff;
-      font-weight: 600;
-    }
-
-    .queue {
-      margin-top: 6px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.35);
-      padding: 8px;
-      font-size: 13px;
-    }
-
-    .queue-row {
-      display: flex;
-      gap: 8px;
-      padding: 8px 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .queue-row:last-child {
-      border-bottom: none;
-    }
-
-    .pos {
-      width: 28px;
-      font-weight: bold;
-      text-align: center;
-      opacity: 0.9;
-    }
-
-    .info {
-      flex: 1;
-      text-align: left;
-    }
-
-    .nick {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    .card-mask {
-      opacity: 0.85;
-    }
-
-    .goal {
-      opacity: 0.8;
-      font-size: 12px;
-    }
-
-    .hint {
-      margin-top: 8px;
-      font-size: 12px;
-      opacity: 0.85;
-    }
-
-    .hint-strong {
-      margin-top: 4px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 14px;
-    }
-button,
-.tab,
-.btn-main,
-.btn-secondary {
-  border-radius: 999px !important;
-}
-
- 
-
-/* ===== ОСНОВНЫЕ КНОПКИ ===== */
-button,
-.btn-main,
-.btn-secondary,
-.tab {
-  background: linear-gradient(180deg, #4fd1ff, #1ea7d9);
-  color: #ffd84d !important;
-  font-weight: 700;
-  font-size: 15px;
-  padding: 12px 18px;
-  border-radius: 14px;
-  border: none;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-  letter-spacing: 0.3px;
-  cursor: pointer;
-}
-
-/* hover */
-button:hover,
-.btn-main:hover,
-.btn-secondary:hover,
-.tab:hover {
-  background: linear-gradient(180deg, #6be0ff, #2fb8eb);
-}
-
-/* активная вкладка */
-.tab_active {
-  background: linear-gradient(180deg, #2fb8eb, #0b84c1);
-}
-
-/* disabled */
-button:disabled {
-  background: #2b4d5a;
-  color: #9aa9ad !important;
-  box-shadow: none;
-}
-
-/* компактная COPY */
-#copyCardBtn {
-  padding: 6px 12px !important;
-  font-size: 12px !important;
-  border-radius: 10px;
-}
-
-/* адаптив */
-@media (max-width: 480px) {
-  .wrap {
-    padding: 12px;
-  }
-  h1 {
-    font-size: 18px;
-  }
-}
-/* === ФИНАЛ: СИНИЕ КНОПКИ + ЖЁЛТЫЙ ТЕКСТ === */
-.tab,
-button,
-.btn-main,
-.btn-secondary {
-  background: linear-gradient(180deg, #2fb8ff, #0b74ff) !important;
-  color: #ffd84d !important;        /* ЖЁЛТЫЙ ТЕКСТ */
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  font-weight: 700;
-}
-
-/* hover — лёгкое усиление */
-.tab:hover,
-button:hover,
-.btn-main:hover,
-.btn-secondary:hover {
-  filter: brightness(1.08);
-}
-
-/* активная вкладка (одна!) */
-.tab.active {
-  background: linear-gradient(180deg, #3fd0ff, #0a6dff) !important;
-  color: #ffd84d !important;
-  box-shadow: 0 0 0 2px rgba(255,216,77,0.35);
-}
-/* === БАЗА: ВСЕ КНОПКИ (НЕАКТИВНЫЕ ПО УМОЛЧАНИЮ) === */
-.tab,
-button,
-.btn-main,
-.btn-secondary {
-  background: linear-gradient(180deg, #1b5fa8, #0a3f7a) !important; /* ТЕМНЕЕ */
-  color: #ffd84d !important; /* жёлтый текст */
-  border: 1px solid rgba(255,255,255,0.15);
-  font-weight: 700;
-  opacity: 0.75;
-}
-
-/* hover для неактивных */
-.tab:hover,
-button:hover,
-.btn-main:hover,
-.btn-secondary:hover {
-  opacity: 0.9;
-  filter: brightness(1.05);
-}
-
-/* === АКТИВНАЯ КНОПКА (ТОЛЬКО ОДНА) === */
-.tab.active {
-  background: linear-gradient(180deg, #3fd0ff, #0b74ff) !important; /* ЯРКО-СИНЯЯ */
-  color: #ffd84d !important;
-  opacity: 1;
-  box-shadow: 0 0 0 2px rgba(255,216,77,0.35);
-}
-
-
-   
-    @media (max-width: 480px) {
-      .wrap {
-        padding: 12px;
-      }
-      h1 {
-        font-size: 18px;
-      }
-    }
-/* ===== PAY PAGE FIX ===== */
-
-.box {
-  margin: 0 0 8px 0;
-  padding: 12px;
-}
-
-
-
-.row{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-
-
-.topRow {
-  justify-content: space-between;
-  gap: 12px;
-}
-
-
-.kv{
-  display:flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.k{
-  font-size: 12px;
-  opacity: .85;
-}
-
-.v{
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* номер карты */
-.cardTop{
-  margin-top: 8px;
-  margin-bottom: 6px;
-}
-
-.card-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap: wrap;
-}
-
-.card-row .v{
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-/* кнопка COPY */
-.copy-mini{
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.2);
-  background: rgba(0,0,0,.35);
-  color: #ffd84d;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* чекбокс */
-.check-row{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  margin-top: 10px;
-}
-
-.check-row input{
-  margin-top: 4px;
-}
-
-/* нижние кнопки */
-.pay-actions{
-  display:flex;
-  gap:10px;
-  margin-top: 14px;
-}
-
-.pay-actions .btn-main,
-.pay-actions .btn-secondary{
-  flex:1;
-}
-/* === PAY PAGE: компактнее === */
-
-.pay h1 {
-  font-size: 18px;
-}
-
-.pay .sub {
-  font-size: 13px;
-}
-
-.pay .card-row,
-.pay .box,
-.pay .list li {
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.pay .card-row .v {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.pay .hint,
-.pay .notify {
-  font-size: 12px;
-}
-.box ol {
-  margin-left: 0;
-  padding-left: 18px;
-}
-
-
-/* Чекбоксы */
-.checkRow {
-  margin-top: 6px;
-  margin-bottom: 4px;
-}
-
-/* Поясняющий текст */
-.note {
-  margin-top: 4px;
-  line-height: 1.3;
-}
-.file-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 10px 14px;
-  border-radius: 10px;
-
-  background: linear-gradient(180deg, #4fb7ff, #2d8fe0);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-
-  cursor: pointer;
-  user-select: none;
-  border: none;
-}
-
-.file-btn:hover {
-  background: linear-gradient(180deg, #63c3ff, #3799ea);
-}
-
-.file-name {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #cfe9ff;
-}
-/* COPY button - make it look active */
-#copyCardBtn, .copy-btn {
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
-
-  background: linear-gradient(180deg, #4fb7ff, #2d8fee) !important;
-  color: #fff !important;
-  border: 0 !important;
-  box-shadow: 0 8px 18px rgba(45,143,238,.35) !important;
-}
-
-#copyCardBtn:disabled, .copy-btn:disabled {
-  opacity: 1 !important;   /* чтобы не “серела” */
-  cursor: pointer !important;
-}
-/* ===== COMPACT PAY LAYOUT ===== */
-.box {
-  margin: 6px 0;
-  padding: 10px 12px;
-}
-
-.box > .k {
-  margin-bottom: 4px;
-}
-
-.list {
-  margin: 4px 0 6px;
-  padding-left: 16px;
-}
-
-.list li {
-  margin-bottom: 3px;
-  line-height: 1.25;
-}
-
-.checkRow {
-  margin: 4px 0;
-}
-
-.note {
-  margin-top: 4px;
-  line-height: 1.3;
-}
-/* COPY button fix */
-.copy-btn,
-#copyBtn,
-button.copy {
-  background: linear-gradient(180deg, #4fb7ff, #2d8fee);
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  opacity: 1;
-  box-shadow: 0 4px 12px rgba(45,143,238,.35);
-}
-/* ===== ЕДИНЫЙ ВИД ВСЕХ КНОПОК ===== */
-button,
-.btn,
-.file-btn,
-.copy-btn,
-a.btn,
-a.copy-btn {
-  border-radius: 14px !important;
-}
-
-/* одинаково во всех состояниях */
-button:hover,
-button:active,
-button:focus,
-.btn:hover,
-.btn:active,
-.btn:focus,
-.file-btn:hover,
-.file-btn:active,
-.file-btn:focus,
-.copy-btn:hover,
-.copy-btn:active,
-.copy-btn:focus,
-a.btn:hover,
-a.btn:active,
-a.btn:focus {
-  border-radius: 14px !important;
-}
-/* ===== ЕДИНЫЙ СТИЛЬ ВСЕХ КНОПОК НА СТРАНИЦЕ ===== */
-button,
-.btn,
-.file-btn,
-.copy-btn,
-a.btn,
-a.copy-btn {
-  font-family: Arial, sans-serif !important;
-  font-weight: 700 !important;
-  font-size: 14px !important;
-
-  color: #ffffff !important;           /* единый цвет текста */
-  text-decoration: none !important;
-
-  background: linear-gradient(180deg, #59d8ff, #2d8fe6) !important; /* единый фон */
-  border: 0 !important;
-  border-radius: 14px !important;
-
-  padding: 10px 16px !important;
-  line-height: 1 !important;
-
-  box-shadow: 0 8px 18px rgba(0,0,0,.25) !important;
-  cursor: pointer !important;
-  user-select: none !important;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-}
-
-/* hover / active одинаковые для всех */
-button:hover,
-.btn:hover,
-.file-btn:hover,
-.copy-btn:hover,
-a.btn:hover,
-a.copy-btn:hover {
-  filter: brightness(1.08) !important;
-}
-
-button:active,
-.btn:active,
-.file-btn:active,
-.copy-btn:active,
-a.btn:active,
-a.copy-btn:active {
-  transform: translateY(1px) !important;
-  filter: brightness(0.96) !important;
-}
-
-/* если где-то внутри кнопки есть span/strong и т.п. — принудительно белый текст */
-button * ,
-.btn * ,
-.file-btn * ,
-.copy-btn * ,
-a.btn * ,
-a.copy-btn * {
-  color: #ffffff !important;
-}
-/* ===== QUEUE: сделать ВСЕ кнопки одинаковыми ===== */
-
-/* общий вид (таб-кнопки сверху + большие кнопки снизу) */
-.queue .tabs button,
-.queue .tabs .btn,
-.queue .actions button,
-.queue .actions .btn,
-.queue button.btn,
-.queue a.btn,
-.queue button {
-  background: linear-gradient(180deg, #59d8ff 0%, #2d8fe6 100%) !important;
-  color: #ffffff !important;
-  border: 0 !important;
-
-  border-radius: 18px !important;     /* одинаковое скругление */
-  padding: 12px 16px !important;
-  font-weight: 700 !important;
-  letter-spacing: .2px;
-
-  opacity: 1 !important;              /* убираем "серость" */
-  filter: none !important;
-  box-shadow: 0 8px 18px rgba(0,0,0,.25) !important;
-}
-
-/* hover/active — одинаковые */
-.queue .tabs button:hover,
-.queue .tabs .btn:hover,
-.queue .actions button:hover,
-.queue .actions .btn:hover,
-.queue button:hover,
-.queue a.btn:hover{
-  filter: brightness(1.08) !important;
-}
-
-.queue .tabs button:active,
-.queue .tabs .btn:active,
-.queue .actions button:active,
-.queue .actions .btn:active,
-.queue button:active,
-.queue a.btn:active{
-  transform: translateY(1px) !important;
-  filter: brightness(0.96) !important;
-}
-
-/* только реально disabled должны выглядеть серыми */
-.queue button:disabled,
-.queue .btn.disabled,
-.queue .btn[aria-disabled="true"]{
-  opacity: .55 !important;
-  cursor: not-allowed !important;
-}
-
-/* Текст “Перечислишь первому…” — меньше и компактнее */
-.queue .hint,
-.queue .note,
-.queue .queueHint,
-.queue .msg{
-  font-size: 12px !important;
-  line-height: 1.2 !important;
-  margin: 6px 0 10px !important;
-}
 /* =========================
-   CLEAN LAYER (override)
+   Territory Trust — Clean UI
+   bank dark + velvet blue + gold text
    ========================= */
 
-/* плотнее блоки */
-.card { padding: 14px !important; }
-.box  { margin: 0 0 10px 0 !important; padding: 10px 12px !important; }
-.list { margin: 6px 0 8px 18px !important; padding: 0 !important; }
-.list li { margin: 0 0 4px 0 !important; line-height: 1.25 !important; }
-.note { margin-top: 4px !important; line-height: 1.3 !important; }
-
-/* верхняя строка получатель/карта в одну линию */
-.topRow{
-  display:flex !important;
-  align-items:flex-start !important;
-  justify-content:space-between !important;
-  gap:12px !important;
-}
-.kv { display:flex !important; flex-direction:column !important; gap:2px !important; }
-.k  { font-size:12px !important; opacity:.85 !important; }
-.v  { font-size:14px !important; font-weight:700 !important; }
-
-/* ЕДИНЫЙ стиль всех кнопок */
-.btn,
-button.btn,
-a.btn,
-.copy-btn,
-.file-btn{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-
-  background: linear-gradient(180deg, #59d8ff, #2d8fe6) !important;
-  color:#fff !important;
-
-  border:none !important;
-  border-radius: 18px !important;
-  padding: 12px 16px !important;
-
-  font-weight:700 !important;
-  font-size:14px !important;
-  text-decoration:none !important;
-
-  cursor:pointer !important;
-  box-shadow:0 8px 18px rgba(0,0,0,.25) !important;
-}
-
-/* маленькая кнопка (COPY) */
-.btn--small,
-.copy-btn{
-  padding: 7px 12px !important;
-  font-size:12px !important;
-  border-radius: 14px !important;
-}
-
-/* кнопка "Прикрепить скрин" как обычная кнопка */
-.file-btn{
-  display:inline-flex !important;
-  width:auto !important;
-  padding:12px 18px !important;
-  border-radius:18px !important;
-  font-size:14px !important;
-}
-
-
-/* hover/active одинаковые */
-.btn:hover,
-.copy-btn:hover,
-.file-btn:hover{
-  filter:brightness(1.08) !important;
-}
-.btn:active,
-.copy-btn:active,
-.file-btn:active{
-  transform:translateY(1px) !important;
-  filter:brightness(0.96) !important;
-}
-
-/* если реально disabled */
-.btn:disabled,
-.btn.disabled{
-  opacity:.55 !important;
-  cursor:not-allowed !important;
-}
-/* ==============================
-   BANK / MONO-LIKE THEME (DROP-IN)
-   Вставь в КОНЕЦ styles.css
-   ============================== */
-
-/* базовые переменные */
 :root{
-  --bg1:#0b2233;
-  --bg2:#153a4f;
-  --card:rgba(10,16,20,.62);
-  --cardBorder:rgba(255,255,255,.08);
+  --bg1:#071a26;
+  --bg2:#0c2c3e;
 
-  --text:#ffffff;
-  --muted:rgba(255,255,255,.72);
+  --card: rgba(8, 16, 22, .58);
+  --cardBorder: rgba(255,255,255,.10);
+
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.78);
+
+  --gold: #FFD76A;
+  --goldSoft: rgba(255,215,122,.25);
+
+  /* velvet buttons */
+  --btn1:#1f6fb8;
+  --btn2:#154d86;
+
+  --btnBorder: rgba(255,255,255,.14);
+  --shadow: 0 12px 28px rgba(0,0,0,.45);
+  --inner: inset 0 1px 0 rgba(255,255,255,.12);
 
   --fieldBg:#ffffff;
-  --fieldText:#101418;
-  --fieldBorder:rgba(0,0,0,.10);
-
-  --primary1:#19c2ff;
-  --primary2:#0a9bff;
-  --primaryText:#07131b;
-
-  --secondaryBg:rgba(255,255,255,.10);
-  --secondaryBorder:rgba(255,255,255,.14);
+  --fieldText:#0b1f2a;
+  --focus: rgba(79,178,255,.25);
 }
 
-/* фон страницы */
-html,body{height:100%}
+/* reset */
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; height:100%; }
 body{
-  margin:0;
   font-family: Arial, sans-serif;
-  color:var(--text);
-  background: radial-gradient(1200px 600px at 40% -10%, rgba(25,194,255,.16), transparent 55%),
-              linear-gradient(135deg, var(--bg1), var(--bg2));
+  color: var(--text);
+  background:
+    radial-gradient(1100px 600px at 40% -10%, rgba(25,194,255,.16), transparent 55%),
+    linear-gradient(135deg, var(--bg1), var(--bg2));
 }
 
-/* контейнер */
+/* layout */
 .wrap{
   width:100%;
   max-width:480px;
-  padding:16px;
-  box-sizing:border-box;
   margin:0 auto;
+  padding:16px;
 }
 
-/* карточка */
 .card{
-  background:var(--card);
-  border:1px solid var(--cardBorder);
-  border-radius:18px;
-  padding:16px;
-  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  background: var(--card);
+  border: 1px solid var(--cardBorder);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
   backdrop-filter: blur(8px);
 }
 
-/* заголовки/подзаголовки */
 h1{
-  margin:0 0 8px 0;
-  font-size:19px;
-  letter-spacing:.2px;
+  margin:0 0 10px 0;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: .2px;
 }
-.sub, .subtitle{
-  font-size:12.5px;
-  color:var(--muted);
-  margin-bottom:12px;
-  line-height:1.35;
+.subtitle,.sub,.note{
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.35;
 }
+.note{ margin-top: 6px; }
 
-/* плотность блоков формы */
-.box{ margin:0 0 10px 0; }
+/* =========================
+   Inputs (registration/pay)
+   ========================= */
+.box{ margin: 10px 0; }
 label{
   display:block;
-  font-size:12px;
-  color:var(--muted);
-  margin:0 0 6px 0;
+  margin: 0 0 6px 0;
+  color: var(--muted);
+  font-size: 16px;
 }
-
-/* поля ввода — белые, как в банке */
-input, select, textarea{
+input,textarea,select{
   width:100%;
-  box-sizing:border-box;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--fieldBorder);
-  background:var(--fieldBg);
-  color:var(--fieldText);
-  outline:none;
-  font-size:13px;
+  background: var(--fieldBg);
+  color: var(--fieldText);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 17px;
+  outline: none;
 }
-input::placeholder, textarea::placeholder{ color:rgba(16,20,24,.45); }
-input:focus, select:focus, textarea:focus{
-  border-color: rgba(25,194,255,.55);
-  box-shadow: 0 0 0 3px rgba(25,194,255,.18);
-}
-
-/* верхняя строка "получатель / карта" */
-.row{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-  margin-bottom:12px;
-}
-.kv{ flex:1; min-width:0; }
-.k{ font-size:12px; color:var(--muted); margin-bottom:4px; }
-.v{ font-size:13.5px; font-weight:700; }
-
-/* список инструкций */
-.list, ol{
-  margin:10px 0 12px 0;
-  padding-left:18px;
-}
-.list li, ol li{
-  margin:0 0 6px 0;
-  line-height:1.35;
-  font-size:13px;
+input::placeholder,textarea::placeholder{ color: rgba(11,31,42,.45); opacity:1; }
+input:focus,textarea:focus,select:focus{
+  border-color: rgba(79,178,255,.65);
+  box-shadow: 0 0 0 3px var(--focus);
 }
 
-/* общий стиль кнопок (единый для всех) */
-button, .btn, .btn-main, .btn-secondary, .tab, .copy-btn, .file-btn, a.btn, a.copy-btn{
+/* =========================
+   Buttons (global)
+   ========================= */
+button, .btn-main, .btn-secondary, .tab, .file-btn, .copy-btn, a.btn{
   -webkit-appearance:none;
   appearance:none;
-  border:none;
+  border: 1px solid var(--btnBorder);
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .25px;
+
+  background: linear-gradient(180deg, var(--btn1), var(--btn2));
+  color: var(--gold);
+  box-shadow: var(--inner), 0 10px 22px rgba(0,0,0,.35);
+
   cursor:pointer;
   user-select:none;
-  font-weight:700;
-  font-size:13px;
-  border-radius:999px;        /* одинаковые скругления */
-  padding:10px 14px;
-  line-height:1;
   text-decoration:none;
+
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:8px;
-  transition: transform .08s ease, filter .12s ease, opacity .12s ease;
+
+  transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
 }
 
-/* основная кнопка */
-.btn-main, button.btn-main{
-  background: linear-gradient(180deg, var(--primary1), var(--primary2));
-  color: var(--primaryText);
-  box-shadow: 0 10px 22px rgba(0,0,0,.22);
+button:hover, .btn-main:hover, .btn-secondary:hover, .tab:hover, .file-btn:hover, .copy-btn:hover, a.btn:hover{
+  filter: brightness(1.06);
+}
+button:active, .btn-main:active, .btn-secondary:active, .tab:active, .file-btn:active, .copy-btn:active, a.btn:active{
+  transform: translateY(1px);
+  filter: brightness(.98);
 }
 
-/* вторичная */
-.btn-secondary, button.btn-secondary{
-  background: var(--secondaryBg);
-  border:1px solid var(--secondaryBorder);
-  color: var(--text);
+/* Disabled — реально disabled, без “обмана” */
+button:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+  filter: none;
+  box-shadow: none;
 }
 
-/* маленькая кнопка COPY — чтобы была "активной" */
-.copy-btn, button.copy-btn{
-  padding:7px 12px;
-  font-size:12px;
-  background: linear-gradient(180deg, var(--primary1), var(--primary2));
-  color: var(--primaryText);
-}
-
-/* кнопка "прикрепить скрин" — как обычная (не на всю ширину) */
-.file-btn, button.file-btn{
-  background: var(--secondaryBg);
-  border:1px solid var(--secondaryBorder);
-  color: var(--text);
-  padding:9px 14px;
-}
-
-/* состояния */
-button:hover, .btn:hover, .tab:hover, .copy-btn:hover, .file-btn:hover{ filter:brightness(1.06); }
-button:active, .btn:active, .tab:active, .copy-btn:active, .file-btn:active{ transform:translateY(1px); filter:brightness(.98); }
-button:disabled, .disabled{
-  opacity:.55 !important;
-  cursor:not-allowed !important;
-  transform:none !important;
-}
-
-/* блок кнопок внизу (как у тебя) */
+/* button groups */
 .buttons{
   display:flex;
-  gap:10px;
-  margin-top:12px;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
 }
-.buttons > *{ flex:1; }
 
-/* табы линий 10/50/100 */
-.tabs{ display:flex; gap:10px; margin:10px 0 12px 0; }
-.tab{
-  flex:1;
-  background: var(--secondaryBg);
-  border:1px solid var(--secondaryBorder);
-  color: var(--text);
+/* tabs (queue + cabinet) */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin: 14px 0;
 }
+.tab{ flex:1; opacity:.85; }
 .tab.active{
-  background: linear-gradient(180deg, var(--primary1), var(--primary2));
-  color: var(--primaryText);
-  border: none;
-}
-
-/* текст подсказки типа "Перечислишь первому..." */
-.hint-strong, .hint{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.35;
-  margin:8px 0 10px 0;
-}
-
-/* чекбоксы — чуть аккуратнее */
-.checkRow{
-  margin:8px 0;
-  font-size:13px;
-}
-/* убрать левые "квадратики/маркеры" перед строками */
-.checkRow::before,
-.note::before,
-.hint::before,
-.card label::before {
-  content: none !important;
-  display: none !important;
-}
-
-ul, ol { list-style: none !important; padding-left: 0 !important; }
-li::marker { content: "" !important; }
-/* чекбоксы: банковский стиль */
-.checkRow input[type="checkbox"]{
-  width: 16px !important;
-  height: 16px !important;
-  accent-color: #00c6ff !important; /* цвет галочки */
-  transform: translateY(2px);
-}
-.checkRow{
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-/* компактнее текст (меньше переносов) */
-.card { max-width: 520px !important; } /* чуть шире карточка */
-.card, .card * { letter-spacing: 0 !important; }
-
-.card p, .card label, .card li, .note, .hint, .subtitle {
-  font-size: 12.5px !important;
-  line-height: 1.28 !important;
-}
-.noteTitle{
-  font-weight:700;
-  margin-bottom:8px;
-}
-
-.steps{
-  margin:0;
-  padding-left:18px;
-}
-
-.steps li{
-  margin:6px 0;
-}
-/* кнопка — состояние ожидания */
-#sentBtn.waiting {
-  opacity: .55;
-  filter: grayscale(20%);
-}
-
-/* квитанция есть, но уведомления не включены */
-#sentBtn.ready {
-  opacity: .9;
-  box-shadow: 0 0 12px rgba(0,198,255,.45);
-  cursor: not-allowed;
-}
-
-/* активная */
-#sentBtn.active {
   opacity: 1;
-  box-shadow: 0 0 16px rgba(0,198,255,.75);
-  cursor: pointer;
-}
-
-/* мягкая подсветка чекбокса уведомлений */
-.checkRow.attention {
-  background: rgba(0,198,255,.12);
-  border-radius: 10px;
-  padding: 6px;
-  animation: pulse 1.2s ease-in-out 2;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 rgba(0,198,255,0); }
-  50% { box-shadow: 0 0 12px rgba(0,198,255,.6); }
-  100% { box-shadow: 0 0 0 rgba(0,198,255,0); }
-}
-/* ===== INDEX FIX (банковский стартовый экран) ===== */
-.card.intro {
-  padding: 34px 28px !important;
-}
-
-
-.card.intro h1{
-  font-size: 26px !important;
-  line-height: 1.15 !important;
-  margin: 0 0 10px !important;
-}
-
-.card.intro .subtitle{
-  font-size: 14px !important;
-  line-height: 1.35 !important;
-  opacity: .86 !important;
-  margin: 0 0 18px !important;
-}
-
-.intro-buttons{
-  display: flex !important;
-  justify-content: center !important;
-}
-
-.start-btn{
-  width: auto !important;
-  min-width: 220px !important;
-  padding: 12px 22px !important;
-  border-radius: 18px !important;
-  font-size: 14px !important;
-}
-
-/* если вдруг общий .buttons растягивает всё */
-.buttons > *{
-  flex: 0 0 auto !important;
-}
-/* ===== ЗОЛОТОЙ ТЕКСТ НА ВСЕХ КНОПКАХ ===== */
-button,
-.btn,
-.btn-main,
-.btn-secondary,
-.copy-btn,
-.copy-mini,
-.file-btn {
-  color: #FFD76A !important; /* жёлто-золотой */
-  font-weight: 600;
-}
-
-/* если внутри кнопки есть span / иконки */
-button *,
-.btn * {
-  color: #FFD76A !important;
-}
-
-
-/* ===== MOBILE READABILITY BOOST ===== */
-@media (max-width: 480px) {
-
-  body {
-    font-size: 16px;
-  }
-
-  .card h1 {
-    font-size: 22px;
-    line-height: 1.25;
-  }
-
-  .card p,
-  .subtitle {
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
-  .queue-item,
-  .payment-info,
-  .instruction {
-    font-size: 15px;
-  }
-
-  button,
-  .btn-main {
-    font-size: 16px;
-  }
-
-  input {
-    font-size: 16px; /* важно: iOS не будет зумить */
-  }
-}
-/* === Центрирование главной карточки === */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-/* Центрируем ТОЛЬКО главную страницу */
-.intro-page .wrap {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* Убираем подсветку у кнопки "Правила участия" */
-.btn-secondary {
-  background: linear-gradient(180deg, #1c3b52, #132b3d);
-  box-shadow: none;
-  color: #ffd966;
-}
-/* Принудительно убираем яркую подсветку у кнопки "Правила участия" */
-.buttons button:last-child {
-  background: linear-gradient(180deg, #1c3b52, #132b3d) !important;
-  box-shadow: none !important;
-  filter: none !important;
-}
-/* "Правила участия" — как синие кнопки, но без лишнего свечения */
-.btn-rules{
-  background: linear-gradient(180deg, #1c3b52, #132b3d) !important;
-  box-shadow: none !important;
-  filter: none !important;
-  opacity: 1 !important;
-}
-
-.btn-rules:hover,
-.btn-rules:active,
-.btn-rules:focus{
-  box-shadow: none !important;
-  filter: none !important;
-}
-/* Подсветка кнопки "Далее" когда она стала активной */
-.btn-main.is-active {
-  background: linear-gradient(180deg, #2fb9ff, #1a66ff) !important;
-  box-shadow: 0 10px 22px rgba(47,185,255,0.22) !important;
-  filter: saturate(1.08) brightness(1.06) !important;
-}
-
-/* Когда disabled — глушим */
-.btn-main:disabled {
-  opacity: 0.55;
-  filter: none !important;
-  box-shadow: none !important;
-  cursor: not-allowed;
-}
-/* === ЕДИНЫЙ ВИД ВСЕХ КНОПОК НА ГЛАВНОЙ === */
-button,
-.btn-main,
-.btn-secondary,
-.btn-ghost {
-  background: linear-gradient(180deg, #1f4b6a, #153247) !important;
-  color: #ffd966 !important;              /* жёлтый текст */
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.15),
-    0 12px 28px rgba(0,0,0,.35) !important;
-  border: none !important;
-}
-
-/* Подсвеченное состояние (активные кнопки) */
-button.is-active,
-.btn-main.is-active,
-.btn-secondary.is-active,
-.btn-ghost.is-active {
-  filter: brightness(1.2) saturate(1.25) !important;
-}
-
-/* Наведение — лёгкое усиление */
-button:hover {
-  filter: brightness(1.15);
-}
-
-/* УБИРАЕМ СЕРЫЙ ВИД */
-button:disabled {
-  opacity: 1 !important;
-  filter: none !important;
-  cursor: pointer !important;
-}
-/* 🔥 ПРИНУДИТЕЛЬНАЯ ПОДСВЕТКА КНОПКИ "НАЧАТЬ" */
-#startBtn {
-  background: linear-gradient(180deg, #1da9ff, #0b5ed7) !important;
-  color: #ffd966 !important;
-  opacity: 1 !important;
-  box-shadow: 0 12px 30px rgba(0, 160, 255, 0.6) !important;
-  filter: none !important;
-}
-/* 💡 СВЕЧЕНИЕ КНОПКИ "НАЧАТЬ" ЧЕРЕЗ ПСЕВДОСЛОЙ */
-#startBtn {
-  position: relative;
-  z-index: 2;
-}
-
-#startBtn::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #1da9ff, #0b5ed7);
-  opacity: 0.6;
-  filter: blur(18px);
-  z-index: -1;
-}
-/* === GLOBAL FONT SCALE (MVP) === */
-
-body {
-  font-size: 18px;
-}
-
-/* Заголовки */
-h1 {
-  font-size: 26px;
-  line-height: 1.3;
-}
-
-h2 {
-  font-size: 22px;
-}
-
-h3 {
-  font-size: 20px;
-}
-
-/* Обычный текст */
-p,
-label,
-.small-text,
-.helper-text {
-  font-size: 17px;
-  line-height: 1.5;
-}
-
-/* Поля ввода */
-input,
-textarea {
-  font-size: 18px;
-  padding: 14px 16px;
-}
-
-/* КНОПКИ — ВАЖНО */
-button,
-.btn-main,
-.btn-secondary {
-  font-size: 18px;
-  padding: 14px 18px;
-}
-
-/* Кнопки выбора линии (10 / 50 / 100) */
-.line-btn {
-  font-size: 18px;
-}
-
-/* Очередь участников */
-.queue-item {
-  font-size: 17px;
-}
-
-.queue-item strong {
-  font-size: 18px;
-}
-/* ===== HERO (главная страница) ===== */
-.intro-card h1,
-.hero h1,
-.card h1 {
-  font-size: 30px;
-  line-height: 1.15;
-  letter-spacing: 0.2px;
-}
-
-.intro-card p,
-.hero p,
-.card p {
-  font-size: 20px;      /* вот это и есть “значительно” */
-  line-height: 1.45;
-  opacity: 0.92;        /* чтобы был читаем, но мягкий */
-}
-/* ===== GOLD DIVIDERS ===== */
-
-.gold-divider {
-  width: 80%;
-  margin: 22px auto;
-  border-radius: 2px;
-}
-
-.gold-divider.triple {
-  height: 6px;
-  background:
-    linear-gradient(
-      to bottom,
-      #f5d77a 0%,
-      #d4af37 33%,
-      #f5d77a 66%,
-      #b8962e 100%
-    );
-  box-shadow: 0 0 12px rgba(212,175,55,0.6);
-}
-
-.gold-divider.double {
-  height: 4px;
-  background:
-    linear-gradient(
-      to bottom,
-      #f5d77a 0%,
-      #d4af37 100%
-    );
-  box-shadow: 0 0 8px rgba(212,175,55,0.5);
-}
-/* === GOLD DIVIDER TEST === */
-.gold-divider {
-  width: 88%;
-  height: 3px;
-  margin: 20px auto;
-  background: linear-gradient(to right, transparent, gold, gold, transparent);
-  box-shadow: 0 0 12px gold;
-}
-
-.gold-divider.triple {
-  height: 5px;
-  background:
-    linear-gradient(to right, transparent, gold, transparent),
-    linear-gradient(to right, transparent, gold, transparent),
-    linear-gradient(to right, transparent, gold, transparent);
-  background-size: 100% 1px, 100% 1px, 100% 1px;
-  background-position: 0 0, 0 2px, 0 4px;
-  background-repeat: no-repeat;
-}
-
-.gold-divider.double {
-  height: 3px;
-  background:
-    linear-gradient(to right, transparent, gold, transparent),
-    linear-gradient(to right, transparent, gold, transparent);
-  background-size: 100% 1px, 100% 1px;
-  background-position: 0 0, 0 2px;
-  background-repeat: no-repeat;
-}
-/* ====== РАЗВОДИМ КНОПКУ И ЛИНИИ ====== */
-.intro-buttons{
-  margin: 30px 0;        /* расстояние сверху и снизу кнопки */
-  padding: 12px 0;
-  position: relative;
-  z-index: 1;
-}
-
-/* Линии дальше от кнопки */
-.gold-divider.triple{
-  margin: 18px auto 34px;
-}
-
-.gold-divider.double{
-  margin: 34px auto 18px;
-}
-
-/* ====== ПРИГЛУШАЕМ СВЕЧЕНИЕ КНОПКИ ====== */
-.btn-main{
-  box-shadow:
-    0 0 12px rgba(80,160,255,0.35),
-    0 0 28px rgba(80,160,255,0.25);
-}
-
-/* Линии не ловят "туман" */
-.gold-divider{
-  position: relative;
-  z-index: 5;
-}
-/* Убираем туман от кнопки, оставляем аккуратное свечение */
-.btn-main{
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.15);
-}
-/* ===== УВЕЛИЧЕНИЕ ШРИФТОВ НА ГЛАВНОЙ ===== */
-
-.card-intro h1{
-  font-size: 28px;
-  line-height: 1.25;
-}
-
-.subtitle{
-  font-size: 18px;
-  line-height: 1.5;
-  opacity: 0.9;
-}
-
-.btn-main{
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-/* ===== FIX: УБРАТЬ ТУМАН + УВЕЛИЧИТЬ ШРИФТ ===== */
-
-/* Заголовок */
-.card-intro h1 {
-  font-size: 30px !important;
-  line-height: 1.25;
-  text-shadow: none !important;
-}
-
-/* Подзаголовок */
-.subtitle {
-  font-size: 19px !important;
-  line-height: 1.55;
-  opacity: 1 !important;
-  text-shadow: none !important;
-}
-
-/* Кнопка */
-.btn-main {
-  font-size: 19px !important;
-  font-weight: 600;
-  
-  /* УБИРАЕМ ТУМАН */
-  box-shadow: 
-    0 6px 18px rgba(0, 140, 255, 0.35) !important;
-  
-  filter: none !important;
-}
-
-/* Золотые линии — без тумана */
-.gold-divider {
-  box-shadow: none !important;
-  filter: none !important;
-  opacity: 0.9;
-}
-
-/* Карточка — чище */
-.card-intro {
-  box-shadow: none !important;
-}
-/* ===== УБИТЬ ТУМАН + УВЕЛИЧИТЬ ШРИФТ (HARD FIX) ===== */
-
-/* 0) На всякий случай увеличим базу */
-body { font-size: 18px !important; }
-
-/* 1) Заголовок — крупнее */
-.card-intro h1,
-.wrap h1,
-h1 {
-  font-size: 34px !important;
-  line-height: 1.2 !important;
-  text-shadow: none !important;
-}
-
-/* 2) Подзаголовок — крупнее и контрастнее */
-.subtitle,
-.card-intro .subtitle,
-.wrap .subtitle {
-  font-size: 20px !important;
-  line-height: 1.55 !important;
-  opacity: 1 !important;
-  color: rgba(255,255,255,0.78) !important;
-  text-shadow: none !important;
-}
-
-/* 3) Кнопка — убрать «прожектор/туман» */
-.btn-main,
-button.btn-main {
-  font-size: 20px !important;
-  font-weight: 700 !important;
-
-  /* ВОТ ЭТО и есть туман: рубим */
-  filter: none !important;
-  backdrop-filter: none !important;
-
-  /* мягкое свечение, не дым-машина */
-  box-shadow: 0 8px 18px rgba(0,140,255,0.25) !important;
-}
-
-/* 4) Часто туман сидит в псевдо-слоях */
-.btn-main::before, .btn-main::after,
-.card-intro::before, .card-intro::after,
-.wrap::before, .wrap::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* 5) Золотые линии — без засвета */
-.gold-divider, .gold-divider.triple, .gold-divider.double {
-  filter: none !important;
-  box-shadow: none !important;
-  opacity: 0.9 !important;
-}
-
-/* 6) Если есть общий "glow" на карточке — убираем */
-.card-intro {
-  filter: none !important;
-  box-shadow: none !important;
-}
-/* ===== ФИНАЛЬНАЯ КОРРЕКЦИЯ РАЗМЕРОВ ===== */
-
-/* Базовый текст – чуть меньше */
-body {
-  font-size: 16px !important;
-}
-
-/* Заголовки */
-h1 {
-  font-size: 30px !important;
-  line-height: 1.25 !important;
-}
-
-h2 {
-  font-size: 22px !important;
-}
-
-/* Описания, инструкции */
-.subtitle,
-p,
-.label,
-.instruction,
-.queue-description {
-  font-size: 17px !important;
-  line-height: 1.55 !important;
-}
-
-/* Списки участников */
-.queue-item,
-.queue-item span,
-.queue-item div {
-  font-size: 16px !important;
-}
-
-/* ===== КНОПКИ ===== */
-
-/* Основные кнопки */
-.btn-main,
-button.btn-main {
-  font-size: 18px !important;
-  padding: 14px 22px !important;
-  border-radius: 28px !important;
-
-  /* туман НЕ возвращаем */
-  filter: none !important;
-  backdrop-filter: none !important;
-  box-shadow: 0 6px 14px rgba(0,140,255,0.22) !important;
-}
-
-/* Второстепенные кнопки */
-button,
-.btn-secondary {
-  font-size: 16px !important;
-  padding: 12px 20px !important;
-}
-/* ===== ФИНАЛЬНЫЙ БАЛАНС UI ===== */
-
-/* --- КНОПКИ: текст чуть меньше --- */
-button,
-.btn-main,
-.btn-secondary {
-  font-size: 16px !important;
-  padding: 12px 20px !important;
-}
-
-/* Главная кнопка (синяя) */
-.btn-main {
-  font-size: 17px !important;
-}
-
-/* --- ОЧЕРЕДЬ УЧАСТНИКОВ: увеличить --- */
-.queue-item {
-  font-size: 17px !important;
-  line-height: 1.5 !important;
-}
-
-.queue-item strong,
-.queue-item .name {
-  font-size: 18px !important;
-}
-
-.queue-item .details,
-.queue-item .purpose {
-  font-size: 16px !important;
-  opacity: 0.9;
-}
-
-/* --- ПОДПИСИ НАД ПОЛЯМИ (Регистрация) --- */
-label,
-.form-label {
-  font-size: 16px !important;
-  margin-bottom: 6px;
-  display: block;
-}
-
-/* --- ПОЛЯ ВВОДА: меньше и аккуратнее --- */
-input,
-textarea {
-  font-size: 17px !important;
-  padding: 12px 14px !important;
-  height: auto !important;
-  border-radius: 14px !important;
-}
-
-/* Убрать ощущение "ведра" */
-input[type="text"],
-input[type="number"] {
-  min-height: 44px !important;
-}
-/* ===== КНОПКИ: убираем туман и кислоту ===== */
-
-button,
-.btn,
-.primary-btn {
-  background: linear-gradient(
-    180deg,
-    #2f8fe8 0%,
-    #1f6fb8 100%
-  );                /* спокойный синий */
-  
-  box-shadow: none; /* ❌ УБРАЛИ ТУМАН */
-  
-  color: #eaf4ff;   /* мягкий светлый текст */
-  font-weight: 600;
-  font-size: 15px; /* чуть меньше, чем было */
-  
-  text-shadow: none; /* ❌ УБРАЛИ СВЕЧЕНИЕ ТЕКСТА */
-}
-
-/* Кнопка "Помощь отправлена - Далее" */
-button.disabled,
-button[disabled] {
-  background: #2a4b63;
-  color: #9fb6c9;
-  box-shadow: none;
-  opacity: 1; /* чтобы не была мутной */
-}
-
-/* Кнопка "Назад" */
-button.secondary,
-.back-btn {
-  background: linear-gradient(
-    180deg,
-    #3a5f7a 0%,
-    #2a4b63 100%
-  );
-  color: #d6e6f2;
-  box-shadow: none;
-}
-/* ===== FIX INPUT VISIBILITY ===== */
-
-/* обычное состояние полей */
-input,
-textarea,
-select {
-  background: #ffffff !important;
-  color: #0b1f2a !important;
-  font-size: 16px !important;
-  border-radius: 14px !important;
-  border: 2px solid rgba(255,255,255,0.15) !important;
-  box-shadow: none !important;
-}
-
-/* placeholder (текст "Например:") */
-input::placeholder,
-textarea::placeholder {
-  color: #9aa6b2 !important;
-  opacity: 1 !important;
-}
-
-/* состояние ФОКУСА (когда нажал) */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none !important;
-  border-color: #4fb2ff !important;
-  box-shadow: 0 0 0 3px rgba(79,178,255,0.25) !important;
-  background: #ffffff !important;
-}
-/* ===== FIX INTRO SMALL TEXT ===== */
-
-.subtitle {
-  font-size: 17px !important;   /* было мелко — стало читаемо */
-  line-height: 1.5 !important;
-  color: rgba(255,255,255,0.88) !important;
-}
-
-/* на совсем маленьких экранах */
-@media (max-width: 420px) {
-  .subtitle {
-    font-size: 18px !important;
-  }
-}
-/* ===== FIX OVERBRIGHT BUTTONS ===== */
-
-/* Основная активная кнопка */
-button.primary,
-.btn-primary {
-  background: linear-gradient(180deg, #3aa9ff, #1f78d1) !important;
-  color: #0b1a26 !important;          /* тёмный текст = читаемо */
-  font-weight: 600;
-  box-shadow: none !important;        /* УБРАЛИ СВЕЧЕНИЕ */
-  text-shadow: none !important;       /* УБРАЛИ ПОДСВЕТКУ ТЕКСТА */
-}
-
-/* При нажатии */
-button.primary:active,
-.btn-primary:active {
-  background: linear-gradient(180deg, #2f96ea, #1b6ab8) !important;
-}
-
-/* Неактивная / финальная кнопка */
-button.disabled,
-button:disabled {
-  background: rgba(255,255,255,0.08) !important;
-  color: rgba(255,255,255,0.5) !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-}
-
-/* === FIX: финальная кнопка "Помощь отправлена – Далее" === */
-button.disabled,
-.button.disabled,
-.btn.disabled {
-    background: rgba(40, 80, 110, 0.9) !important; /* спокойный тёмно-синий */
-    color: #cfd8e3 !important;                   /* светлый, читаемый текст */
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    opacity: 1 !important;
-}
-
-/* если кнопка всё ещё слишком яркая */
-button.disabled:hover,
-.button.disabled:hover,
-.btn.disabled:hover {
-    background: rgba(40, 80, 110, 0.9) !important;
-}
-
-/* === FIX: кнопка "Прикрепить квитанцию" === */
-button.upload,
-.button-upload,
-.attach-btn,
-button[type="file"] {
-    background: #2f6fa3 !important;   /* спокойный синий */
-    color: #ffffff !important;        /* читаемый белый */
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-}
-
-/* убираем свечение при наведении */
-button.upload:hover,
-.button-upload:hover,
-.attach-btn:hover {
-    background: #2f6fa3 !important;
-}
-
-/* === FIX: кнопка "Помощь отправлена – Далее" === */
-button.final,
-button.disabled,
-.btn-final {
-    background: #1f5f8b !important;   /* обычный синий */
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    opacity: 1 !important;
-}
-
-/* === FIX: кнопка "Прикрепить квитанцию" === */
-button.upload,
-button.attach,
-button[type="file"],
-button:has(svg),
-button:has(img) {
-    background: linear-gradient(180deg, #2f6fa3, #255b86) !important;
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-}
-
-/* если есть hover-эффект */
-button.upload:hover,
-button.attach:hover {
-    background: linear-gradient(180deg, #2a6392, #214f75) !important;
-}
-/* === FINAL FIX: читаемая кнопка "Прикрепить квитанцию" === */
-.btn-attach{
-  background: #2b6ea6 !important;     /* спокойный синий */
-  color: #ffffff !important;          /* белый текст */
-  font-size: 16px !important;
-  font-weight: 700 !important;
-
-  box-shadow: none !important;
-  text-shadow: none !important;
-  filter: none !important;
-  backdrop-filter: none !important;
-  mix-blend-mode: normal !important;
-
-  border: 1px solid rgba(255,255,255,.18) !important;
-  opacity: 1 !important;
-}
-
-/* если на элемент навешан общий “glow” через псевдо-элементы */
-.btn-attach::before,
-.btn-attach::after{
-  content: none !important;
-  display: none !important;
-}
-
-/* hover/active тоже без неона */
-.btn-attach:hover,
-.btn-attach:active{
-  background: #255f90 !important;
-  box-shadow: none !important;
-  filter: none !important;
-}
-/* ===== FIX: читаемость кнопки "Прикрепить квитанцию" ===== */
-button,
-label {
-}
-
-/* если кнопка — label или button, усиливаем текст */
-button:has(svg),
-label:has(svg),
-button.upload,
-label.upload,
-button.attach,
-label.attach {
-  font-size: 18px !important;      /* КРУПНЕЕ */
-  font-weight: 800 !important;     /* ЖИРНО */
-  color: #ffffff !important;       /* ЧИСТО БЕЛЫЙ */
-  text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important; /* КОНТРАСТ */
-  letter-spacing: 0.3px !important;
-}
-
-/* если has() не поддерживается — запасной вариант */
-label[for],
-button {
-  font-size: 18px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
-}
-
-/* ===== MODAL CONFIRM (pay.html) ===== */
-.modal-overlay{
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0,0,0,.55);
-  z-index: 9999;
-}
-
-.modal-overlay.show{ display: flex; }
-
-.modal{
-  width: min(420px, 92vw);
-  background: rgba(8, 20, 28, .96);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 18px;
-  box-shadow: 0 18px 60px rgba(0,0,0,.55);
-  padding: 16px 16px 14px;
-}
-
-.modal-title{
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #fff;
-}
-
-.modal-text{
-  font-size: 14px;
-  line-height: 1.35;
-  color: rgba(255,255,255,.88);
-}
-
-.modal-actions{
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.modal-actions .btn-main,
-.modal-actions .btn-secondary{
-  flex: 1;
-}
-
-.modal{
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,.55);
-  z-index: 9999;
-  padding: 16px;
-}
-.modal.show{ display:flex; }
-
-.modal__box{
-  width: 100%;
-  max-width: 420px;
-  background: rgba(10,20,26,.96);
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  border-color: rgba(255,215,122,.55);
+  box-shadow: var(--inner), 0 12px 26px rgba(0,0,0,.45), 0 0 0 3px var(--goldSoft);
+}
+
+/* =========================
+   Queue blocks
+   ========================= */
+.queue{
+  margin-top: 10px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.30);
   border: 1px solid rgba(255,255,255,.08);
+  padding: 10px;
 }
-.modal__title{
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-.modal__text{
-  font-size: 15px;
-  line-height: 1.35;
-  opacity: .95;
-}
-.modal__actions{
-  display:flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-.modal__actions button{
-  flex: 1;
-}
-
-/* ===== MODAL: confirm before cabinet ===== */
-.modal{
-  position: fixed;
-  inset: 0;
-  display: none;
-  z-index: 9999;
-}
-
-.modal.is-open{ display:block; }
-
-.modal__backdrop{
-  position:absolute;
-  inset:0;
-  background: rgba(0,0,0,.55);
-}
-
-.modal__dialog{
-  position: relative;
-  width: min(92vw, 420px);
-  margin: 18vh auto 0;
-  padding: 16px 16px 14px;
-  border-radius: 18px;
-  background: rgba(10, 30, 42, .96);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 18px 50px rgba(0,0,0,.55);
-  color: #fff;
-}
-
-.modal__title{
-  font-size: 18px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.modal__text{
-  font-size: 15px;
-  line-height: 1.35;
-  color: rgba(255,255,255,.92);
-}
-
-.modal__actions{
+.queue-row{
   display:flex;
   gap:10px;
-  margin-top: 14px;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
 }
-.modal__actions button{
-  flex:1;
-}
+.queue-row:last-child{ border-bottom:none; }
+.pos{ width:28px; text-align:center; font-weight:800; opacity:.9; }
+.nick{ font-weight:800; margin-bottom:2px; }
+.card-mask, .goal{ color: rgba(255,255,255,.82); }
+.goal{ font-size: 14px; opacity:.9; }
 
-/* Кнопка должна быть кликабельной только в active */
-#sentBtn { pointer-events: none; }              /* по умолчанию НЕ кликается */
-#sentBtn.active { pointer-events: auto; }       /* кликается только когда active */
-#sentBtn:disabled { pointer-events: none; }     /* если disabled — точно не кликается */
-
-/* ===== ВАЖНЫЙ СТАТУС ===== */
-.status-badge {
+/* =========================
+   Status badge (cabinet)
+   ========================= */
+.status-badge{
   margin-top: 12px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 18px;
-  text-align: center;
-  letter-spacing: 0.3px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid rgba(255,215,122,.40);
+  background: rgba(0,0,0,.24);
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+  text-align:center;
+}
+.status-badge .title{
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+.status-badge .text{
+  font-size: 16px;
+  color: rgba(255,255,255,.88);
+  line-height: 1.35;
 }
 
-.status-waiting {
-  background: linear-gradient(135deg, #2b3a55, #1f2a3d);
-  border: 2px solid #f1c40f;
-  color: #f1c40f;
-  box-shadow: 0 0 18px rgba(241, 196, 15, 0.35);
-}
+/* =========================
+   CABINET: Active line highlight (SUPER visible)
+   Works with JS adding class "tab-active" to #tab10/#tab50/#tab100
+   ========================= */
+#tab10.tab-active, #tab50.tab-active, #tab100.tab-active{
+  opacity: 1 !important;
 
-.status-confirmed {
-  background: linear-gradient(135deg, #1f3d2b, #163024);
-  border: 2px solid #2ecc71;
-  color: #2ecc71;
-  box-shadow: 0 0 18px rgba(46, 204, 113, 0.35);
-}
-
-.status-member {
-  background: linear-gradient(135deg, #243a5e, #1a2c47);
-  border: 2px solid #3498db;
-  color: #ffffff;
-}
-
-/* ===== Активная линия в кабинете (дорого, но заметно) ===== */
-.tab-active {
-  background: linear-gradient(
-    180deg,
-    #143b57 0%,
-    #0b2638 100%
-  ) !important;
-
-  color: #f2d07c !important;
-
-  border: 2px solid rgba(242, 208, 124, 0.55);
+  background: linear-gradient(180deg, #2aa7ff 0%, #0b5ed7 100%) !important;
+  border: 2px solid rgba(255,215,122,.95) !important;
 
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 8px 18px rgba(0, 0, 0, 0.45);
+    var(--inner),
+    0 16px 34px rgba(0,0,0,.55),
+    0 0 0 4px rgba(255,215,122,.22),
+    0 0 26px rgba(255,215,122,.28) !important;
 
-  letter-spacing: 0.3px;
+  transform: translateY(-2px) scale(1.03) !important;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* =========================
+   Mobile fine-tuning
+   ========================= */
+@media (max-width: 420px){
+  h1{ font-size: 28px; }
+  .subtitle,.sub,.note{ font-size: 15px; }
+  button,.btn-main,.btn-secondary,.tab{ font-size: 16px; padding: 12px 16px; }
+  input{ font-size: 16px; }
+}
 
