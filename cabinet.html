@@ -250,9 +250,27 @@
         `Ваш ID: <b>${myId}</b>` +
         (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
 
-      // активная линия: из URL или сохранённая
-      const active = LINES.includes(line) ? line : getActiveLine();
-      setActiveLine(active);
+   // ===== определяем активную линию ПРАВИЛЬНО =====
+const state = readState();
+
+// 1. Если линия передана в URL — используем её
+if (LINES.includes(line)) {
+  setActiveLine(line);
+} else {
+  // 2. Иначе ищем первую линию, где пользователь участвует
+  const activeFromState = LINES.find(l =>
+    state.lines[String(l)]?.status !== "none"
+  );
+
+  // 3. Если нашли — делаем её активной
+  if (activeFromState) {
+    setActiveLine(activeFromState);
+  } else {
+    // 4. Иначе fallback
+    setActiveLine(getActiveLine());
+  }
+}
+
 
       // табы
       qs("#tab10").addEventListener("click", () => setActiveLine(10));
