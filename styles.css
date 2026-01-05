@@ -1969,6 +1969,37 @@ button {
 #sentBtn.active { pointer-events: auto; }       /* кликается только когда active */
 #sentBtn:disabled { pointer-events: none; }     /* если disabled — точно не кликается */
 
+/* ===== ВАЖНЫЙ СТАТУС ===== */
+.status-badge {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+.status-waiting {
+  background: linear-gradient(135deg, #2b3a55, #1f2a3d);
+  border: 2px solid #f1c40f;
+  color: #f1c40f;
+  box-shadow: 0 0 18px rgba(241, 196, 15, 0.35);
+}
+
+.status-confirmed {
+  background: linear-gradient(135deg, #1f3d2b, #163024);
+  border: 2px solid #2ecc71;
+  color: #2ecc71;
+  box-shadow: 0 0 18px rgba(46, 204, 113, 0.35);
+}
+
+.status-member {
+  background: linear-gradient(135deg, #243a5e, #1a2c47);
+  border: 2px solid #3498db;
+  color: #ffffff;
+}
+
 
 
 
