@@ -144,15 +144,18 @@
 
     // ✅ ФИКС подсветки табов: НЕ меняем класс на btn-main,
     // а добавляем/убираем отдельный класс line-tab-active
-    function setTabActive(line) {
+function setTabActive(line) {
   for (const l of LINES) {
     const btn = qs("#tab" + l);
+    // базовый класс
+    btn.classList.add("btn-secondary");
+    btn.classList.remove("btn-main");
 
-    btn.className = (l === line)
-      ? "btn-main tab-active"
-      : "btn-secondary";
+    // активность — отдельным классом
+    btn.classList.toggle("tab-active", l === line);
   }
 }
+
 
 
     function renderTree(tree) {
