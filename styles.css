@@ -335,4 +335,100 @@ button:disabled{
   border-color: rgba(255,255,255,.10) !important;
   box-shadow: none !important;
 }
+/* =========================
+   INTRO (index.html) — OLD STYLE + CENTER
+   только для главной
+   ========================= */
+
+/* 1) Центрируем карточку на главной странице */
+body.intro-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;        /* по вертикали */
+  justify-content: center;    /* по горизонтали */
+  padding: 16px;
+}
+
+body.intro-page .wrap {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+}
+
+/* 2) Фон карточки — “бархатный” как на старом скрине */
+body.intro-page .card.intro {
+  width: 100%;
+  border-radius: 22px !important;
+
+  background: linear-gradient(
+    180deg,
+    rgba(22, 52, 74, 0.92) 0%,
+    rgba(10, 28, 40, 0.95) 100%
+  ) !important;
+
+  border: 1px solid rgba(255,255,255,0.08) !important;
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+/* 3) Заголовок — уменьшить (у тебя он стал огромный) */
+body.intro-page .card.intro h1 {
+  font-size: 28px !important;
+  line-height: 1.15 !important;
+  margin: 0 0 10px 0 !important;
+}
+
+/* 4) Подзаголовок — спокойный, читаемый */
+body.intro-page .card.intro .subtitle {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  opacity: 0.85 !important;
+}
+
+/* 5) Золотые полоски (ты их уже вставил div’ами) — делаем красивыми */
+body.intro-page .gold-divider {
+  width: 84% !important;
+  height: 3px !important;
+  margin: 16px auto !important;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    #f5d77a,
+    #d4af37,
+    #f5d77a,
+    transparent
+  ) !important;
+
+  border-radius: 999px !important;
+  box-shadow: 0 0 10px rgba(212,175,55,0.35) !important;
+  opacity: 0.85 !important;
+}
+
+/* если у тебя есть двойная/тройная — пусть будет тоньше/толще */
+body.intro-page .gold-divider.double { height: 3px !important; }
+body.intro-page .gold-divider.triple { height: 4px !important; }
+
+/* 6) Кнопка "Начать" — дорогая, но без “прожектора” */
+body.intro-page #startBtn {
+  font-size: 16px !important;
+  padding: 12px 22px !important;
+
+  background: linear-gradient(180deg, #2fa9ff, #1a66cc) !important;
+  color: #ffd966 !important;
+
+  box-shadow: 0 6px 16px rgba(0,120,255,0.35) !important;
+  filter: none !important;
+}
+
+body.intro-page #startBtn::before,
+body.intro-page #startBtn::after {
+  content: none !important; /* убиваем все “туманы” через псевдо-слои */
+}
+
 
