@@ -20,9 +20,7 @@
         <button class="tab" data-line="100">100 ₴</button>
       </div>
 
-      <div class="queue" id="queueBlock">
-        <!-- сюда JS вставит очередь -->
-      </div>
+      <div class="queue" id="queueBlock"></div>
 
       <div class="hint-strong">
         Перечислишь первому → отправишь подтверждение → дождёшься подтверждения → займёшь третье место
@@ -38,30 +36,24 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-
-      // =========================================================
-      // MVP логика:
-      // - ref в URL считаем как my_id (владелец этой личной очереди)
-      // - active_line синхронизируем с cabinet.html
-      // - joinBtn: ставит candidate_waiting и ведёт в cabinet.html
-      // =========================================================
-
       // ===== helpers =====
       const qs = (s) => document.querySelector(s);
 
       function getParams() {
         const p = new URLSearchParams(location.search);
         return {
-          ref: p.get("ref") || "",
+          ref: p.get("ref") || "",   // пригласивший (владелец реф-ссылки)
           line: p.get("line") || ""
         };
       }
 
-      // ===== ключи localStorage (как в cabinet.html) =====
+      // ===== ключи localStorage =====
       const KEY_ACTIVE_LINE = "active_line";
       const KEY_MY_ID = "my_id";
-      const KEY_REF_OWNER = "ref_owner"; // на будущее, сейчас не используем
+      const KEY_REF_OWNER = "ref_owner";
       const KEY_STATE = "cabinet_state";
+
+      const LINES = ["10","50","100"];
 
       // ===== ДАННЫЕ (тестовые витрины) =====
       const queues = {
@@ -89,51 +81,47 @@
       const rulesBtn = qs("#rulesBtn");
       const tabs = document.querySelectorAll(".tab");
 
-      // ===== STATE storage helpers (cabinet_state) =====
+      // ===== cabinet_state =====
       function readState() {
-        try {
-          return JSON.parse(localStorage.getItem(KEY_STATE) || "{}");
-        } catch {
-          return {};
-        }
+        try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+        catch { return {}; }
       }
-
       function writeState(state) {
         localStorage.setItem(KEY_STATE, JSON.stringify(state));
       }
 
-      // создаём дефолты по линиям, если их нет
       function ensureDefaults() {
         const state = readState();
         if (!state.lines) state.lines = {};
-        ["10","50","100"].forEach((l) => {
+        LINES.forEach((l) => {
           if (!state.lines[l]) {
             state.lines[l] = {
               status: "none",
+              profile: null,                 // <-- ВАЖНО: профиль по линии
               tree: { level1: [], level2: [] }
             };
+          } else {
+            // если старый state без profile — аккуратно добавим
+            if (!("profile" in state.lines[l])) state.lines[l].profile = null;
+            if (!state.lines[l].tree) state.lines[l].tree = { level1: [], level2: [] };
+            if (!state.lines[l].status) state.lines[l].status = "none";
           }
         });
         writeState(state);
       }
 
-      function setStatus(lineStr, status) {
+      function hasProfile(lineStr) {
         const state = readState();
-        if (!state.lines) state.lines = {};
-        if (!state.lines[lineStr]) {
-          state.lines[lineStr] = { status: "none", tree: { level1: [], level2: [] } };
-        }
-        state.lines[lineStr].status = status;
-        writeState(state);
+        const p = state.lines?.[lineStr]?.profile;
+        return !!(p && p.nick && p.goal && p.card);
       }
 
-      // ===== ТЕКУЩАЯ ЛИНИЯ =====
+      // ===== текущая линия =====
       let currentLine = "10";
 
       function setActiveLine(lineStr) {
         currentLine = lineStr;
         localStorage.setItem(KEY_ACTIVE_LINE, String(lineStr));
-        // чтобы и после перезагрузки было видно в адресе (не обязательно, но удобно)
         const u = new URL(location.href);
         u.searchParams.set("line", String(lineStr));
         history.replaceState({}, "", u);
@@ -141,10 +129,10 @@
 
       function getSavedLineFromStorage() {
         const saved = localStorage.getItem(KEY_ACTIVE_LINE) || "";
-        return (saved === "10" || saved === "50" || saved === "100") ? saved : "";
+        return LINES.includes(saved) ? saved : "";
       }
 
-      // ===== РЕНДЕР =====
+      // ===== рендер =====
       function renderQueue() {
         const data = queues[currentLine] || [];
 
@@ -168,25 +156,30 @@
         });
 
         queueBlock.innerHTML = html;
-        joinBtn.textContent = "Присоединиться к линии " + currentLine + " ₴";
+
+        // Подсказка для пользователя по кнопке
+        joinBtn.textContent = hasProfile(currentLine)
+          ? ("Открыть кабинет линии " + currentLine + " ₴")
+          : ("Присоединиться к линии " + currentLine + " ₴");
       }
 
       function setTabUI(lineStr) {
         tabs.forEach(t => t.classList.toggle("active", t.dataset.line === lineStr));
       }
 
-      // ===== INIT: определяем my_id и линию =====
+      // ===== INIT =====
       ensureDefaults();
 
       const { ref, line } = getParams();
 
-      // my_id = ref из URL (если пришли как владелец очереди)
-      // иначе берём из localStorage, иначе TEST123 (чтобы не было пусто)
-      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
+      // ref из URL — это пригласивший (владелец реф-ссылки)
+      if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
+
+      // my_id: если нет — создаём тестовый (позже сделаем реальный генератор)
+      const myId = localStorage.getItem(KEY_MY_ID) || "TEST123";
       localStorage.setItem(KEY_MY_ID, myId);
 
-      // line берём по приоритету: URL -> storage -> дефолт
-      const fromUrlLine = (line === "10" || line === "50" || line === "100") ? line : "";
+      const fromUrlLine = LINES.includes(line) ? line : "";
       const fromStorageLine = getSavedLineFromStorage();
       const startLine = fromUrlLine || fromStorageLine || "10";
 
@@ -194,7 +187,7 @@
       setTabUI(startLine);
       renderQueue();
 
-      // ===== ВКЛАДКИ =====
+      // ===== вкладки =====
       tabs.forEach(tab => {
         tab.addEventListener("click", () => {
           const newLine = tab.dataset.line;
@@ -204,34 +197,43 @@
         });
       });
 
-      // ===== КНОПКИ =====
+      // ===== кнопки =====
 
-      // Присоединиться: ставим статус кандидата WAITING и ведём в кабинет
+      // Присоединиться:
+      // - если профиля нет → в register.html
+      // - если профиль уже есть → в cabinet.html на эту линию
       joinBtn.addEventListener("click", () => {
-        // MVP: как только "присоединился", в кабинете этой линии будет "кандидат, ждёт подтверждения"
-        setStatus(String(currentLine), "candidate_waiting");
+        const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
+        const common = `line=${encodeURIComponent(currentLine)}${refOwner ? `&ref=${encodeURIComponent(refOwner)}` : ""}`;
 
-        location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(currentLine)}`;
+        if (!hasProfile(currentLine)) {
+          location.href = `register.html?${common}`;
+          return;
+        }
+
+        // профиль есть → сразу кабинет
+        const me = localStorage.getItem(KEY_MY_ID) || "TEST123";
+        location.href = `cabinet.html?ref=${encodeURIComponent(me)}&line=${encodeURIComponent(currentLine)}`;
       });
 
-      // Кабинет: просто открыть кабинет на текущей линии
+      // Кабинет: открыть на текущей линии
       cabinetBtn.addEventListener("click", () => {
-        location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(currentLine)}`;
+        const me = localStorage.getItem(KEY_MY_ID) || "TEST123";
+        location.href = `cabinet.html?ref=${encodeURIComponent(me)}&line=${encodeURIComponent(currentLine)}`;
       });
 
-      // Правила: пока без отдельной страницы (можно заменить на rules.html)
       rulesBtn.addEventListener("click", () => {
         alert(
           "Правила (MVP):\n" +
-          "1) Вы выбираете линию.\n" +
-          "2) После присоединения вы становитесь кандидатом и ждёте подтверждения.\n" +
-          "3) После подтверждения активируется «Занять 3-е место».\n" +
+          "1) Для каждой линии (10/50/100) регистрация отдельная.\n" +
+          "2) Можно использовать разные ник и карту в разных линиях.\n" +
+          "3) После регистрации в линии вы становитесь кандидатом и ждёте подтверждения.\n" +
           "4) Квитанции и база будут подключены позже."
         );
       });
-
     });
   </script>
 </body>
 </html>
+
 
