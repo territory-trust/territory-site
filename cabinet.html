@@ -1,4 +1,4 @@
-<!doctype html>
+ <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -62,33 +62,50 @@
   </div>
 
   <script>
-    // ====== helpers ======
-    const qs = (s) => document.querySelector(s);
+    // =========================================================
+    // ЛОГИКА MVP (без базы, без квитанций)
+    //
+    // Важно:
+    // - my_id      = ваш собственный ID (показываем "Ваш ID")
+    // - ref_owner  = ID того, по чьей ссылке вы пришли (пригласивший)
+    //
+    // Состояния линии (на одну линию):
+    // none | candidate_waiting | confirmed_can_take3 | member
+    // =========================================================
 
+    // ===== helpers =====
+    const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
 
     function getParams() {
       const p = new URLSearchParams(location.search);
       return {
-        ref: p.get("ref") || "",
-        line: Number(p.get("line") || 0)
+        ref: p.get("ref") || "",                // ref из URL: считаем владельцем реф-ссылки (пригласившим)
+        line: Number(p.get("line") || 0),       // активная линия из URL
+        role: p.get("role") || ""               // для теста: role=receiver1 (получатель №1)
       };
     }
+
+    // --- localStorage keys ---
+    const KEY_ACTIVE_LINE = "active_line";
+    const KEY_MY_ID = "my_id";
+    const KEY_REF_OWNER = "ref_owner";
+    const KEY_STATE = "cabinet_state";
 
     // Хранилище статусов по линиям (MVP на localStorage)
     // statuses: none | candidate_waiting | confirmed_can_take3 | member
     function readState() {
       try {
-        return JSON.parse(localStorage.getItem("cabinet_state") || "{}");
+        return JSON.parse(localStorage.getItem(KEY_STATE) || "{}");
       } catch {
         return {};
       }
     }
     function writeState(state) {
-      localStorage.setItem("cabinet_state", JSON.stringify(state));
+      localStorage.setItem(KEY_STATE, JSON.stringify(state));
     }
 
-    // Стартовый "разумный" дефолт
+    // Стартовый дефолт (создаём объект для всех линий)
     function ensureDefaults() {
       const state = readState();
       if (!state.lines) state.lines = {};
@@ -96,11 +113,8 @@
         if (!state.lines[String(line)]) {
           state.lines[String(line)] = {
             status: "none",
-            // дерево приглашённых — пока заглушки
-            tree: {
-              level1: [],
-              level2: []
-            }
+            // дерево приглашённых — заглушки
+            tree: { level1: [], level2: [] }
           };
         }
       }
@@ -108,27 +122,31 @@
     }
 
     function setActiveLine(line) {
-      localStorage.setItem("active_line", String(line));
+      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
       render(line);
     }
 
     function getActiveLine() {
-      const saved = Number(localStorage.getItem("active_line") || 0);
+      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
       if (LINES.includes(saved)) return saved;
-      return 50; // дефолт как у тебя часто на скринах
+      return 50; // дефолт
     }
 
-    function setButtonsEnabled({wait, take3, confirm, reject}) {
-      qs("#btnWait").disabled = !wait;
+    function setButtonsEnabled({ wait, take3, confirm, reject }) {
+      // ВАЖНО: btnWait — индикатор. Мы всегда держим его disabled.
+      // А "подсветку" можно потом сделать стилем.
+      qs("#btnWait").disabled = true;
+
       qs("#btnTake3").disabled = !take3;
       qs("#btnConfirm").disabled = !confirm;
       qs("#btnReject").disabled = !reject;
+
+      // не используем wait как кликабельность (индикатор)
     }
 
     function setTabActive(line) {
       for (const l of LINES) {
         const btn = qs("#tab" + l);
-        // активную делаем как "btn-main", остальные как "btn-secondary"
         btn.className = (l === line) ? "btn-main" : "btn-secondary";
       }
     }
@@ -136,8 +154,7 @@
     function renderTree(tree) {
       const l1 = tree?.level1 || [];
       const l2 = tree?.level2 || [];
-
-      const fmt = (arr) => arr.length ? arr.map((x, i) => `${i+1}) ${x}`).join("<br>") : "— пока пусто —";
+      const fmt = (arr) => arr.length ? arr.map((x, i) => `${i + 1}) ${x}`).join("<br>") : "— пока пусто —";
 
       return `
         <div><b>Уровень 1</b> (приглашённые вами):<br>${fmt(l1)}</div>
@@ -146,58 +163,6 @@
       `;
     }
 
-    // ====== main render ======
-    function render(line) {
-      const state = readState();
-      const data = state.lines[String(line)];
-      const status = data.status;
-
-      setTabActive(line);
-
-      qs("#lineTitle").textContent = `Линия: ${line} ₴`;
-
-      // Показываем / скрываем блок "войти в линию"
-      const isNone = status === "none";
-      qs("#joinBox").style.display = isNone ? "block" : "none";
-
-      // Статусы и кнопки
-      if (isNone) {
-        qs("#statusBox").innerHTML =
-          `Статус: <b>не участвуете</b><br>Чтобы создать кабинет в этой линии — пройдите процедуру через «Очередь участников».`;
-
-        setButtonsEnabled({wait:false, take3:false, confirm:false, reject:false});
-      }
-
-      if (status === "candidate_waiting") {
-        qs("#statusBox").innerHTML =
-          `Статус: <b>кандидат</b><br>Ожидаем подтверждения от получателя №1.<br><span style="opacity:.85;">(таймер подключим позже)</span>`;
-
-        // активна только "Ожидаем..." как индикатор
-        setButtonsEnabled({wait:true, take3:false, confirm:false, reject:false});
-      }
-
-      if (status === "confirmed_can_take3") {
-        qs("#statusBox").innerHTML =
-          `Статус: <b>подтверждено</b><br>Теперь можно нажать «Занять 3-е место» и создать свою личную тройку в этой линии.`;
-
-        setButtonsEnabled({wait:false, take3:true, confirm:false, reject:false});
-      }
-
-      if (status === "member") {
-        qs("#statusBox").innerHTML =
-          `Статус: <b>участник</b><br>У вас есть личная тройка в этой линии и ваша реф-ссылка ведёт на визитку.`;
-
-        // для участника тут пока ничего не нажимается
-        setButtonsEnabled({wait:false, take3:false, confirm:false, reject:false});
-      }
-
-      // Дерево
-      qs("#treeBox").innerHTML = renderTree(data.tree);
-
-      qs("#msg").textContent = "";
-    }
-
-    // ====== actions (MVP-эмуляция) ======
     function showMsg(t) {
       qs("#msg").textContent = t;
     }
@@ -209,19 +174,81 @@
       render(line);
     }
 
-    // ====== init ======
+    // ===== main render =====
+    function render(line) {
+      const { role } = getParams();
+      const canModerate = (role === "receiver1"); // тестовая роль: получатель №1
+
+      const state = readState();
+      const data = state.lines[String(line)];
+      const status = data.status;
+
+      setTabActive(line);
+      qs("#lineTitle").textContent = `Линия: ${line} ₴`;
+
+      // joinBox показываем только если не участвует
+      const isNone = status === "none";
+      qs("#joinBox").style.display = isNone ? "block" : "none";
+
+      // дефолт: все действия выключены (btnWait всегда disabled)
+      setButtonsEnabled({ wait: false, take3: false, confirm: false, reject: false });
+
+      if (isNone) {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>не участвуете</b><br>` +
+          `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
+      }
+
+      if (status === "candidate_waiting") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>кандидат</b><br>` +
+          `Ожидаем подтверждения от получателя №1.<br>` +
+          `<span style="opacity:.85;">(таймер подключим позже)</span>`;
+
+        // тут ничего не кликается у кандидата
+        // а у получателя №1 (role=receiver1) появятся confirm/reject
+        setButtonsEnabled({ take3: false, confirm: canModerate, reject: canModerate });
+      }
+
+      if (status === "confirmed_can_take3") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>подтверждено</b><br>` +
+          `Теперь можно нажать «Занять 3-е место» и создать свою личную тройку в этой линии.`;
+
+        setButtonsEnabled({ take3: true, confirm: false, reject: false });
+      }
+
+      if (status === "member") {
+        qs("#statusBox").innerHTML =
+          `Статус: <b>участник</b><br>` +
+          `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
+
+        setButtonsEnabled({ take3: false, confirm: false, reject: false });
+      }
+
+      // дерево
+      qs("#treeBox").innerHTML = renderTree(data.tree);
+      qs("#msg").textContent = "";
+    }
+
+    // ===== init =====
     (function init() {
       ensureDefaults();
 
       const { ref, line } = getParams();
 
-      // ref — это "владелец кабинета". Его сохраняем и используем в promo.
-      if (ref) localStorage.setItem("ref", ref);
+      // ref из URL = пригласивший (ref_owner)
+      if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
-      const myRef = localStorage.getItem("ref") || "";
-      qs("#whoNote").innerHTML = myRef
-        ? `Ваш ID (ref): <b>${myRef}</b>`
-        : `Ваш ID (ref): <b>не задан</b><br><span style="opacity:.85;">(для теста можно зайти так: cabinet.html?ref=TEST123)</span>`;
+      // my_id: если ещё не задан — создаём из ref (для теста) или ставим TEST123
+      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
+      localStorage.setItem(KEY_MY_ID, myId);
+
+      const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
+
+      qs("#whoNote").innerHTML =
+        `Ваш ID: <b>${myId}</b>` +
+        (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
 
       // активная линия: из URL или сохранённая
       const active = LINES.includes(line) ? line : getActiveLine();
@@ -232,45 +259,50 @@
       qs("#tab50").addEventListener("click", () => setActiveLine(50));
       qs("#tab100").addEventListener("click", () => setActiveLine(100));
 
-      // переходы
+      // переход в promo (в promo передаём МОЙ id)
       qs("#btnPromo").addEventListener("click", () => {
-        const r = localStorage.getItem("ref") || "";
-        location.href = `promo.html${r ? `?ref=${encodeURIComponent(r)}` : ""}`;
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
       });
 
+      // переход в очередь (показываем очередь владельца = me)
       qs("#btnBackQueue").addEventListener("click", () => {
-        const r = localStorage.getItem("ref") || "";
-        location.href = `queue.html${r ? `?ref=${encodeURIComponent(r)}` : ""}`;
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `queue.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
       });
 
+      // если "не участвует" — идём в очередь на активную линию
       qs("#btnGoQueue").addEventListener("click", () => {
-        const r = localStorage.getItem("ref") || "";
+        const me = localStorage.getItem(KEY_MY_ID) || "";
         const l = getActiveLine();
-        location.href = `queue.html?line=${encodeURIComponent(l)}${r ? `&ref=${encodeURIComponent(r)}` : ""}`;
+        location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // Кнопки действий (пока как тестовые переключатели статуса)
-      // Потом эти места заменишь на реальную логику Supabase.
+      // ===== кнопки действий (MVP) =====
+
+      // Кандидат: занять 3-е место можно только в confirmed_can_take3
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
-        showMsg("✅ Тест: вы стали участником в этой линии (дальше будет реальный сдвиг/создание тройки).");
+        showMsg("✅ Вы стали участником в этой линии (MVP). Следующий шаг — реальный сдвиг/создание тройки.");
       });
 
-      // Эти две кнопки по твоей схеме нужны №1 получателю (в будущем)
+      // Подтвердить / Отклонить — это роль получателя №1 (для теста: &role=receiver1)
       qs("#btnConfirm").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "confirmed_can_take3");
-        showMsg("✅ Тест: подтверждение получено, можно «Занять 3-е место».");
+        showMsg("✅ Подтверждение сделано (MVP). Теперь кандидату доступно «Занять 3-е место».");
       });
 
       qs("#btnReject").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "none");
-        showMsg("⛔ Тест: отклонено (сброс участия в линии).");
+        showMsg("⛔ Отклонено (MVP). Сброс участия в линии.");
       });
 
     })();
   </script>
 </body>
 </html>
+   
+ 
