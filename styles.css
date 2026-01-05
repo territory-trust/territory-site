@@ -431,4 +431,32 @@ body.intro-page #startBtn::after {
   content: none !important; /* убиваем все “туманы” через псевдо-слои */
 }
 
+/* === Неактивные кнопки — читаемые, бархатные === */
+button:disabled,
+.btn:disabled,
+.btn.disabled {
+  background: linear-gradient(
+    180deg,
+    rgba(40, 85, 125, 0.55),
+    rgba(20, 55, 85, 0.55)
+  );
+
+  color: rgba(215, 185, 120, 0.55); /* приглушённое золото */
+
+  border: 1px solid rgba(255, 215, 140, 0.18);
+
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.06),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+
+  opacity: 1;              /* ВАЖНО: не глушим через opacity */
+  cursor: not-allowed;
+}
+
+button:disabled:focus {
+  outline: none;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,0.08),
+    0 0 0 1px rgba(255, 215, 140, 0.25);
+}
 
