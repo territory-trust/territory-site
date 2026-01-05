@@ -1,13 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Очередь — Территория доверия и поддержки</title>
-  
-<link rel="stylesheet" href="styles.css">
 
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
@@ -24,11 +24,9 @@
         <!-- сюда JS вставит очередь -->
       </div>
 
-      
-<div class="hint-strong">
-  Перечислишь первому → сдвинется очередь → займешь третье место
-</div>
-
+      <div class="hint-strong">
+        Перечислишь первому → отправишь подтверждение → дождёшься подтверждения → займёшь третье место
+      </div>
 
       <div class="buttons">
         <button class="btn-main" id="joinBtn">Присоединиться к линии 10 ₴</button>
@@ -38,93 +36,202 @@
     </div>
   </div>
 
-    <script>
-document.addEventListener("DOMContentLoaded", () => {
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-/* ===== ДАННЫЕ ===== */
-const queues = {
-  "10": [
-    { nick: "Олена", card: "5375 **** **** 1234", goal: "Ліки для мами" },
-    { nick: "Ігор",  card: "4149 **** **** 5678", goal: "Оплата гуртожитку" },
-    { nick: "Наталя",card: "5168 **** **** 9012", goal: "Форма дитині в школу" }
-  ],
-  "50": [
-    { nick: "Вадим", card: "4441 **** **** 2222", goal: "Ремонт авто після ДТП" },
-    { nick: "Марія", card: "4731 **** **** 3333", goal: "Курс навчання" },
-    { nick: "Сергій",card: "4149 **** **** 4444", goal: "Тренування сина" }
-  ],
-  "100": [
-    { nick: "Анна", card: "5375 **** **** 5555", goal: "Операція для тата" },
-    { nick: "Роман",card: "5168 **** **** 6666", goal: "Закрити кредит" },
-    { nick: "Юрій", card: "4149 **** **** 7777", goal: "Почати свій бізнес" }
-  ]
-};
+      // =========================================================
+      // MVP логика:
+      // - ref в URL считаем как my_id (владелец этой личной очереди)
+      // - active_line синхронизируем с cabinet.html
+      // - joinBtn: ставит candidate_waiting и ведёт в cabinet.html
+      // =========================================================
 
-/* ===== ТЕКУЩАЯ ЛИНИЯ ===== */
-let currentLine = "10";
+      // ===== helpers =====
+      const qs = (s) => document.querySelector(s);
 
-/* ===== ЭЛЕМЕНТЫ ===== */
-const queueBlock = document.getElementById("queueBlock");
-const joinBtn = document.getElementById("joinBtn");
-const tabs = document.querySelectorAll(".tab");
-/* ===== КЛИК ПО КНОПКЕ ===== */
-joinBtn.addEventListener("click", () => {
-  location.href = `register.html?line=${currentLine}`;
-});
+      function getParams() {
+        const p = new URLSearchParams(location.search);
+        return {
+          ref: p.get("ref") || "",
+          line: p.get("line") || ""
+        };
+      }
 
-/* ===== РЕНДЕР ===== */
-function renderQueue() {
-  const data = queues[currentLine] || [];
+      // ===== ключи localStorage (как в cabinet.html) =====
+      const KEY_ACTIVE_LINE = "active_line";
+      const KEY_MY_ID = "my_id";
+      const KEY_REF_OWNER = "ref_owner"; // на будущее, сейчас не используем
+      const KEY_STATE = "cabinet_state";
 
-  if (!data.length) {
-    queueBlock.innerHTML = "<div class='hint'>Очередь пуста</div>";
-    return;
-  }
+      // ===== ДАННЫЕ (тестовые витрины) =====
+      const queues = {
+        "10": [
+          { nick: "Олена", card: "5375 **** **** 1234", goal: "Ліки для мами" },
+          { nick: "Ігор",  card: "4149 **** **** 5678", goal: "Оплата гуртожитку" },
+          { nick: "Наталя",card: "5168 **** **** 9012", goal: "Форма дитині в школу" }
+        ],
+        "50": [
+          { nick: "Вадим", card: "4441 **** **** 2222", goal: "Ремонт авто після ДТП" },
+          { nick: "Марія", card: "4731 **** **** 3333", goal: "Курс навчання" },
+          { nick: "Сергій",card: "4149 **** **** 4444", goal: "Тренування сина" }
+        ],
+        "100": [
+          { nick: "Анна", card: "5375 **** **** 5555", goal: "Операція для тата" },
+          { nick: "Роман",card: "5168 **** **** 6666", goal: "Закрити кредит" },
+          { nick: "Юрій", card: "4149 **** **** 7777", goal: "Почати свій бізнес" }
+        ]
+      };
 
-  let html = "";
-  data.forEach((item, index) => {
-    html += `
-      <div class="queue-row">
-        <div class="pos">${index + 1}</div>
-        <div class="info">
-          <div class="nick">${item.nick}</div>
-          <div class="card-mask">${item.card}</div>
-          <div class="goal">${item.goal}</div>
-        </div>
-      </div>
-    `;
-  });
+      // ===== ЭЛЕМЕНТЫ =====
+      const queueBlock = qs("#queueBlock");
+      const joinBtn = qs("#joinBtn");
+      const cabinetBtn = qs("#cabinetBtn");
+      const rulesBtn = qs("#rulesBtn");
+      const tabs = document.querySelectorAll(".tab");
 
-  queueBlock.innerHTML = html;
-  joinBtn.textContent = "Присоединиться к линии " + currentLine + " ₴";
-}
+      // ===== STATE storage helpers (cabinet_state) =====
+      function readState() {
+        try {
+          return JSON.parse(localStorage.getItem(KEY_STATE) || "{}");
+        } catch {
+          return {};
+        }
+      }
 
-/* ===== ВКЛАДКИ ===== */
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    currentLine = tab.dataset.line;
-    localStorage.setItem("line", currentLine);
-    renderQueue();
-  });
-});
+      function writeState(state) {
+        localStorage.setItem(KEY_STATE, JSON.stringify(state));
+      }
 
-/* ===== ВОССТАНОВЛЕНИЕ ===== */
-const saved = localStorage.getItem("line");
-if (saved && queues[saved]) {
-  currentLine = saved;
-  tabs.forEach(t => t.classList.toggle("active", t.dataset.line === saved));
-}
+      // создаём дефолты по линиям, если их нет
+      function ensureDefaults() {
+        const state = readState();
+        if (!state.lines) state.lines = {};
+        ["10","50","100"].forEach((l) => {
+          if (!state.lines[l]) {
+            state.lines[l] = {
+              status: "none",
+              tree: { level1: [], level2: [] }
+            };
+          }
+        });
+        writeState(state);
+      }
 
-/* ===== СТАРТ ===== */
-renderQueue();
-});
+      function setStatus(lineStr, status) {
+        const state = readState();
+        if (!state.lines) state.lines = {};
+        if (!state.lines[lineStr]) {
+          state.lines[lineStr] = { status: "none", tree: { level1: [], level2: [] } };
+        }
+        state.lines[lineStr].status = status;
+        writeState(state);
+      }
 
-</script>
+      // ===== ТЕКУЩАЯ ЛИНИЯ =====
+      let currentLine = "10";
 
+      function setActiveLine(lineStr) {
+        currentLine = lineStr;
+        localStorage.setItem(KEY_ACTIVE_LINE, String(lineStr));
+        // чтобы и после перезагрузки было видно в адресе (не обязательно, но удобно)
+        const u = new URL(location.href);
+        u.searchParams.set("line", String(lineStr));
+        history.replaceState({}, "", u);
+      }
 
+      function getSavedLineFromStorage() {
+        const saved = localStorage.getItem(KEY_ACTIVE_LINE) || "";
+        return (saved === "10" || saved === "50" || saved === "100") ? saved : "";
+      }
+
+      // ===== РЕНДЕР =====
+      function renderQueue() {
+        const data = queues[currentLine] || [];
+
+        if (!data.length) {
+          queueBlock.innerHTML = "<div class='hint'>Очередь пуста</div>";
+          return;
+        }
+
+        let html = "";
+        data.forEach((item, index) => {
+          html += `
+            <div class="queue-row">
+              <div class="pos">${index + 1}</div>
+              <div class="info">
+                <div class="nick">${item.nick}</div>
+                <div class="card-mask">${item.card}</div>
+                <div class="goal">${item.goal}</div>
+              </div>
+            </div>
+          `;
+        });
+
+        queueBlock.innerHTML = html;
+        joinBtn.textContent = "Присоединиться к линии " + currentLine + " ₴";
+      }
+
+      function setTabUI(lineStr) {
+        tabs.forEach(t => t.classList.toggle("active", t.dataset.line === lineStr));
+      }
+
+      // ===== INIT: определяем my_id и линию =====
+      ensureDefaults();
+
+      const { ref, line } = getParams();
+
+      // my_id = ref из URL (если пришли как владелец очереди)
+      // иначе берём из localStorage, иначе TEST123 (чтобы не было пусто)
+      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
+      localStorage.setItem(KEY_MY_ID, myId);
+
+      // line берём по приоритету: URL -> storage -> дефолт
+      const fromUrlLine = (line === "10" || line === "50" || line === "100") ? line : "";
+      const fromStorageLine = getSavedLineFromStorage();
+      const startLine = fromUrlLine || fromStorageLine || "10";
+
+      setActiveLine(startLine);
+      setTabUI(startLine);
+      renderQueue();
+
+      // ===== ВКЛАДКИ =====
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const newLine = tab.dataset.line;
+          setActiveLine(newLine);
+          setTabUI(newLine);
+          renderQueue();
+        });
+      });
+
+      // ===== КНОПКИ =====
+
+      // Присоединиться: ставим статус кандидата WAITING и ведём в кабинет
+      joinBtn.addEventListener("click", () => {
+        // MVP: как только "присоединился", в кабинете этой линии будет "кандидат, ждёт подтверждения"
+        setStatus(String(currentLine), "candidate_waiting");
+
+        location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(currentLine)}`;
+      });
+
+      // Кабинет: просто открыть кабинет на текущей линии
+      cabinetBtn.addEventListener("click", () => {
+        location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(currentLine)}`;
+      });
+
+      // Правила: пока без отдельной страницы (можно заменить на rules.html)
+      rulesBtn.addEventListener("click", () => {
+        alert(
+          "Правила (MVP):\n" +
+          "1) Вы выбираете линию.\n" +
+          "2) После присоединения вы становитесь кандидатом и ждёте подтверждения.\n" +
+          "3) После подтверждения активируется «Занять 3-е место».\n" +
+          "4) Квитанции и база будут подключены позже."
+        );
+      });
+
+    });
+  </script>
 </body>
 </html>
-
 
