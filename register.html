@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Регистрация — Территория доверия и поддержки</title>
-<link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="wrap">
@@ -13,36 +13,26 @@
       <div class="sub">Вы выбрали линию: <span class="line" id="lineLabel">—</span></div>
 
       <div class="box">
-  <label>Ник (как вас показывать в очереди)</label>
-  <input
-    id="nick"
-    placeholder="Например: олег_киев"
-    maxlength="24"
-  />
-</div>
+        <label>Ник (как вас показывать в очереди)</label>
+        <input id="nick" placeholder="Например: олег_киев" maxlength="24" />
+      </div>
 
-<div class="box">
-  <label>Цель (коротко)</label>
-  <input
-    id="goal"
-    placeholder="Например: лекарства, учеба, ремонт"
-    maxlength="80"
-  />
-</div>
+      <div class="box">
+        <label>Цель (коротко)</label>
+        <input id="goal" placeholder="Например: лекарства, учеба, ремонт" maxlength="80" />
+      </div>
 
-<div class="box">
-  <label>Номер карты</label>
-  <input
-    id="card"
-    type="text"
-    inputmode="numeric"
-    autocomplete="cc-number"
-    placeholder="0000 0000 0000 0000"
-    maxlength="19"
-  />
-</div>
-
-
+      <div class="box">
+        <label>Номер карты</label>
+        <input
+          id="card"
+          type="text"
+          inputmode="numeric"
+          autocomplete="cc-number"
+          placeholder="0000 0000 0000 0000"
+          maxlength="19"
+        />
+      </div>
 
       <button class="btn-main" id="nextBtn">Далее → к оплате</button>
       <button class="btn-secondary" onclick="history.back()">Назад</button>
@@ -52,80 +42,159 @@
   </div>
 
   <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const nick = document.getElementById("nick");
-  const goal = document.getElementById("goal");
-  const card = document.getElementById("card");
-  const nextBtn = document.getElementById("nextBtn");
+  document.addEventListener("DOMContentLoaded", () => {
+    // ===== ключи (как в cabinet.html) =====
+    const KEY_STATE = "cabinet_state";
+    const KEY_ACTIVE_LINE = "active_line";
+    const KEY_MY_ID = "my_id";
+    const KEY_REF_OWNER = "ref_owner";
 
-  // Если кнопка не найдена — значит id в HTML другой
-  if (!nextBtn) return;
+    const LINES = [10, 50, 100];
 
-  // Стартовое состояние
-  nextBtn.disabled = true;
-  nextBtn.classList.remove("is-active");
+    const nick = document.getElementById("nick");
+    const goal = document.getElementById("goal");
+    const card = document.getElementById("card");
+    const nextBtn = document.getElementById("nextBtn");
+    const lineLabel = document.getElementById("lineLabel");
+    const msg = document.getElementById("msg");
 
-  // Форматирование карты: только цифры + пробелы каждые 4
-  function formatCard(value) {
-    const digits = value.replace(/\D/g, "").slice(0, 16);   // только 16 цифр
-    return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();  // 4444 4444 ...
-  }
+    function showMsg(t) { msg.textContent = t || ""; }
 
-  // Проверка формы + подсветка
-  function checkForm() {
-    const nickOk = nick.value.trim().length > 0;
-    const goalOk = goal.value.trim().length > 0;
+    function getParams() {
+      const p = new URLSearchParams(location.search);
+      return {
+        line: Number(p.get("line") || 0),
+        ref: p.get("ref") || "" // кто пригласил (может прийти из queue.html)
+      };
+    }
 
-    const digits = card.value.replace(/\D/g, "");
-    const cardOk = digits.length === 16;
+    function readState() {
+      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+      catch { return {}; }
+    }
+    function writeState(state) {
+      localStorage.setItem(KEY_STATE, JSON.stringify(state));
+    }
 
-    const ok = nickOk && goalOk && cardOk;
+    function ensureDefaults(state) {
+      if (!state.lines) state.lines = {};
+      for (const l of LINES) {
+        if (!state.lines[String(l)]) {
+          state.lines[String(l)] = {
+            status: "none",
+            profile: null, // тут будет {nick, goal, card}
+            tree: { level1: [], level2: [] }
+          };
+        }
+      }
+      return state;
+    }
 
-    nextBtn.disabled = !ok;
-    nextBtn.classList.toggle("is-active", ok);
-  }
+    // line может быть в url или в localStorage (fallback)
+    function resolveLine() {
+      const { line } = getParams();
+      if (LINES.includes(line)) return line;
 
-  // Ввод карты: форматируем и сохраняем позицию курсора более-менее адекватно
-  card.addEventListener("input", () => {
-    const before = card.value;
-    const beforePos = card.selectionStart;
+      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
+      if (LINES.includes(saved)) return saved;
 
-    card.value = formatCard(card.value);
+      // если вообще ничего — пусть будет 10
+      return 10;
+    }
 
-    // лёгкая попытка не бесить курсором
-    const diff = card.value.length - before.length;
-    const newPos = Math.max(0, (beforePos ?? card.value.length) + diff);
-    card.setSelectionRange(newPos, newPos);
+    // Форматирование карты: только цифры + пробелы каждые 4
+    function formatCard(value) {
+      const digits = value.replace(/\D/g, "").slice(0, 16);
+      return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+    }
+
+    function checkForm() {
+      const nickOk = nick.value.trim().length > 0;
+      const goalOk = goal.value.trim().length > 0;
+      const digits = card.value.replace(/\D/g, "");
+      const cardOk = digits.length === 16;
+
+      const ok = nickOk && goalOk && cardOk;
+
+      nextBtn.disabled = !ok;
+      nextBtn.classList.toggle("is-active", ok);
+    }
+
+    // ===== init =====
+    const line = resolveLine();
+    localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+    lineLabel.textContent = `${line} ₴`;
+
+    // ref_owner: если пришли по ref — сохраняем
+    const { ref } = getParams();
+    if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
+
+    // my_id: в MVP пусть будет TEST123, если ещё нет
+    if (!localStorage.getItem(KEY_MY_ID)) {
+      localStorage.setItem(KEY_MY_ID, "TEST123");
+    }
+
+    // Если ранее уже регистрировались в этой линии — подставим значения в поля
+    let state = ensureDefaults(readState());
+    const existingProfile = state.lines[String(line)]?.profile;
+    if (existingProfile) {
+      nick.value = existingProfile.nick || "";
+      goal.value = existingProfile.goal || "";
+      if (existingProfile.card) card.value = formatCard(existingProfile.card);
+    }
+
+    // стартовое состояние кнопки
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("is-active");
+
+    // обработчики
+    card.addEventListener("input", () => {
+      const before = card.value;
+      const beforePos = card.selectionStart;
+
+      card.value = formatCard(card.value);
+
+      const diff = card.value.length - before.length;
+      const newPos = Math.max(0, (beforePos ?? card.value.length) + diff);
+      card.setSelectionRange(newPos, newPos);
+
+      checkForm();
+    });
+
+    nick.addEventListener("input", checkForm);
+    goal.addEventListener("input", checkForm);
+
+    nextBtn.addEventListener("click", () => {
+      showMsg("");
+
+      const n = nick.value.trim();
+      const g = goal.value.trim();
+      const digits = card.value.replace(/\D/g, "");
+
+      if (!n || !g || digits.length !== 16) {
+        showMsg("Проверьте поля: ник, цель и 16 цифр карты.");
+        return;
+      }
+
+      // === сохраняем ПРОФИЛЬ ПО ЛИНИИ ===
+      state = ensureDefaults(readState());
+      state.lines[String(line)].profile = { nick: n, goal: g, card: digits };
+
+      // === ставим статус по линии (после регистрации) ===
+      // Можно поменять на "none" если захочешь, но логичнее так:
+      state.lines[String(line)].status = "candidate_waiting";
+
+      writeState(state);
+
+      // переход на оплату (ref тоже протащим, если есть)
+      const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
+      const qs = `?line=${encodeURIComponent(line)}${refOwner ? `&ref=${encodeURIComponent(refOwner)}` : ""}`;
+      window.location.href = "pay.html" + qs;
+    });
 
     checkForm();
   });
-
-  nick.addEventListener("input", checkForm);
-  goal.addEventListener("input", checkForm);
-
-  // Клик "Далее"
-  nextBtn.addEventListener("click", () => {
-    const digits = card.value.replace(/\D/g, "");
-    if (digits.length !== 16) return;
-
-    localStorage.setItem("nick", nick.value.trim());
-    localStorage.setItem("goal", goal.value.trim());
-    localStorage.setItem("card", digits);
-
-    // line может быть в url или в localStorage
-    const params = new URLSearchParams(window.location.search);
-    const line = params.get("line") || localStorage.getItem("line") || "";
-
-    window.location.href = "pay.html?line=" + encodeURIComponent(line);
-  });
-
-  // Стартовая проверка
-  checkForm();
-});
-</script>
-    
-
+  </script>
 </body>
 </html>
-
 
