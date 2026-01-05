@@ -6,60 +6,14 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- ДОБАВИЛ: локальные стили, чтобы не ковырять styles.css -->
+  <!-- Лёгкая подсветка активной линии (не ломает твой styles.css) -->
   <style>
-    /* Табы линий: делаем понятную подсветку активной линии */
-    .line-tabs { display:flex; gap:10px; margin:16px 0; }
-    .line-tab {
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.9);
-      cursor: pointer;
-      transition: .15s ease;
-      user-select: none;
-    }
-    .line-tab:active { transform: scale(.98); }
-    .line-tab.is-active{
-      background: linear-gradient(180deg, rgba(50,170,255,.95), rgba(20,110,200,.95));
-      color: #ffe08a;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
-      border-color: rgba(255,224,138,.45);
-    }
-
-    /* Большой яркий статус */
-    .status-badge{
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.18);
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      line-height: 1.25;
-    }
-    .status-badge small{
-      display:block;
-      margin-top: 6px;
-      font-weight: 600;
-      opacity: .9;
-      font-size: 14px;
-      letter-spacing: 0;
-    }
-    .status-waiting{
-      border-color: rgba(255, 224, 138, .55);
-      box-shadow: 0 0 0 2px rgba(255,224,138,.12) inset;
-    }
-    .status-confirmed{
-      border-color: rgba(120, 255, 180, .45);
-      box-shadow: 0 0 0 2px rgba(120,255,180,.10) inset;
-    }
-    .status-member{
-      border-color: rgba(80, 200, 255, .45);
-      box-shadow: 0 0 0 2px rgba(80,200,255,.10) inset;
+    .line-tab-active{
+      box-shadow:
+        0 0 0 2px rgba(255, 210, 90, .35) inset,
+        0 10px 22px rgba(0,0,0,.25);
+      border: 1px solid rgba(255, 210, 90, .45);
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -72,23 +26,23 @@
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
       <!-- Переключатель линий -->
-      <div class="line-tabs">
-        <button class="line-tab" id="tab10" type="button">10 ₴</button>
-        <button class="line-tab" id="tab50" type="button">50 ₴</button>
-        <button class="line-tab" id="tab100" type="button">100 ₴</button>
+      <div style="display:flex; gap:10px; margin:16px 0;">
+        <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
+        <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
+        <button class="btn-secondary" id="tab100" type="button">100 ₴</button>
       </div>
 
       <!-- Блок линии -->
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
 
+      <!-- Тут будет большой статус-блок -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
       <!-- Кнопки действий (активность зависит от статуса) -->
       <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
-        <button class="btn-main" id="btnWait" disabled>Ожидаем подтверждения</button>
-        <button class="btn-main" id="btnTake3" disabled>Занять 3-е место</button>
-        <button class="btn-main" id="btnConfirm" disabled>Подтвердить помощь</button>
-        <button class="btn-secondary" id="btnReject" disabled>Отклонить</button>
+        <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
+        <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
+        <button class="btn-secondary" id="btnReject" type="button" disabled>Отклонить</button>
       </div>
 
       <!-- Если не участвует в линии -->
@@ -96,7 +50,7 @@
         <div class="note" style="line-height:1.6;">
           В этой линии вы пока не участвуете.
         </div>
-        <button class="btn-main" id="btnGoQueue" style="margin-top:10px;">
+        <button class="btn-main" id="btnGoQueue" type="button" style="margin-top:10px;">
           Перейти в «Очередь участников»
         </button>
       </div>
@@ -110,8 +64,8 @@
       <hr style="margin:18px 0; opacity:.25;" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn-secondary" id="btnPromo">Рекламные материалы</button>
-        <button class="btn-secondary" id="btnBackQueue">Очередь участников</button>
+        <button class="btn-secondary" id="btnPromo" type="button">Рекламные материалы</button>
+        <button class="btn-secondary" id="btnBackQueue" type="button">Очередь участников</button>
       </div>
 
       <div class="note" id="msg" style="margin-top:12px;"></div>
@@ -122,11 +76,10 @@
     // =========================================================
     // ЛОГИКА MVP (без базы, без квитанций)
     //
-    // Важно:
-    // - my_id      = ваш собственный ID (показываем "Ваш ID")
-    // - ref_owner  = ID того, по чьей ссылке вы пришли (пригласивший)
+    // my_id      = ваш собственный ID (показываем "Ваш ID")
+    // ref_owner  = ID того, по чьей ссылке вы пришли (пригласивший)
     //
-    // Состояния линии (на одну линию):
+    // Состояния линии:
     // none | candidate_waiting | confirmed_can_take3 | member
     // =========================================================
 
@@ -138,7 +91,7 @@
       return {
         ref: p.get("ref") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || ""
+        role: p.get("role") || "" // для теста: role=receiver1 (получатель №1)
       };
     }
 
@@ -148,8 +101,11 @@
     const KEY_STATE = "cabinet_state";
 
     function readState() {
-      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
-      catch { return {}; }
+      try {
+        return JSON.parse(localStorage.getItem(KEY_STATE) || "{}");
+      } catch {
+        return {};
+      }
     }
     function writeState(state) {
       localStorage.setItem(KEY_STATE, JSON.stringify(state));
@@ -169,29 +125,30 @@
       writeState(state);
     }
 
-    function setActiveLine(line) {
-      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
-      render(line);
-    }
-
     function getActiveLine() {
       const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
       if (LINES.includes(saved)) return saved;
       return 50;
     }
 
+    function setActiveLine(line) {
+      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+      render(line);
+    }
+
     function setButtonsEnabled({ take3, confirm, reject }) {
-      // btnWait = индикатор (не кликаем)
-      qs("#btnWait").disabled = true;
       qs("#btnTake3").disabled = !take3;
       qs("#btnConfirm").disabled = !confirm;
       qs("#btnReject").disabled = !reject;
     }
 
+    // ✅ ФИКС подсветки табов: НЕ меняем класс на btn-main,
+    // а добавляем/убираем отдельный класс line-tab-active
     function setTabActive(line) {
       for (const l of LINES) {
         const btn = qs("#tab" + l);
-        btn.classList.toggle("is-active", l === line);
+        btn.classList.remove("line-tab-active");
+        if (l === line) btn.classList.add("line-tab-active");
       }
     }
 
@@ -206,7 +163,9 @@
       `;
     }
 
-    function showMsg(t) { qs("#msg").textContent = t; }
+    function showMsg(t) {
+      qs("#msg").textContent = t;
+    }
 
     function setStatus(line, status) {
       const state = readState();
@@ -229,6 +188,7 @@
       const isNone = status === "none";
       qs("#joinBox").style.display = isNone ? "block" : "none";
 
+      // по умолчанию всё выключено
       setButtonsEnabled({ take3: false, confirm: false, reject: false });
 
       if (isNone) {
@@ -238,36 +198,56 @@
       }
 
       if (status === "candidate_waiting") {
-        // ДЕЛАЕМ ЯРКО И КРУПНО (как ты просил)
-        qs("#statusBox").innerHTML = `
-          <div class="status-badge status-waiting">
-            ⏳ ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ
-            <small>Вы: <b>кандидат</b>. Ждём подтверждения от получателя №1.</small>
-            <small style="opacity:.85">(таймер подключим позже)</small>
-          </div>
-        `;
+        // большой статус-блок (как у тебя на скрине)
+        qs("#statusBox").innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(255,210,90,.45);
+            box-shadow: 0 0 0 2px rgba(255,210,90,.2) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Вы: <b>кандидат</b>. Ждём подтверждения от получателя №1.
+            </div>
+            <div style="margin-top:6px; opacity:.85;">
+              (таймер подключим позже)
+            </div>
+          </div>`;
 
-        // кандидату не кликается, а получателю №1 показываем confirm/reject
+        // у кандидата кнопок нет, а у получателя №1 появятся confirm/reject
         setButtonsEnabled({ take3: false, confirm: canModerate, reject: canModerate });
       }
 
       if (status === "confirmed_can_take3") {
-        qs("#statusBox").innerHTML = `
-          <div class="status-badge status-confirmed">
-            ✅ ПОДТВЕРЖДЕНО
-            <small>Теперь можно нажать <b>«Занять 3-е место»</b> и создать свою личную тройку.</small>
-          </div>
-        `;
+        qs("#statusBox").innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(120, 220, 140, .45);
+            box-shadow: 0 0 0 2px rgba(120, 220, 140, .18) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              ✅ ПОДТВЕРЖДЕНО
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Теперь можно нажать <b>«Занять 3-е место»</b>.
+            </div>
+          </div>`;
+
         setButtonsEnabled({ take3: true, confirm: false, reject: false });
       }
 
       if (status === "member") {
-        qs("#statusBox").innerHTML = `
-          <div class="status-badge status-member">
-            🟦 ВЫ УЧАСТНИК
-            <small>У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.</small>
-          </div>
-        `;
+        qs("#statusBox").innerHTML =
+          `Статус: <b>участник</b><br>` +
+          `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
         setButtonsEnabled({ take3: false, confirm: false, reject: false });
       }
 
@@ -291,9 +271,8 @@
         `Ваш ID: <b>${myId}</b>` +
         (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
 
-      // ===== определяем активную линию ПРАВИЛЬНО =====
+      // активная линия: URL → или первая где участвует → или сохранённая/дефолт
       const state = readState();
-
       if (LINES.includes(line)) {
         setActiveLine(line);
       } else {
@@ -307,13 +286,12 @@
       qs("#tab50").addEventListener("click", () => setActiveLine(50));
       qs("#tab100").addEventListener("click", () => setActiveLine(100));
 
-      // переход в promo (в promo передаём МОЙ id)
+      // переходы
       qs("#btnPromo").addEventListener("click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
         location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // переход в очередь
       qs("#btnBackQueue").addEventListener("click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
         location.href = `queue.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
@@ -325,17 +303,17 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // ===== кнопки действий (MVP) =====
+      // действия (MVP)
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
-        showMsg("✅ Вы стали участником в этой линии (MVP). Следующий шаг — реальный сдвиг/создание тройки.");
+        showMsg("✅ Вы стали участником в этой линии (MVP).");
       });
 
       qs("#btnConfirm").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "confirmed_can_take3");
-        showMsg("✅ Подтверждение сделано (MVP). Теперь кандидату доступно «Занять 3-е место».");
+        showMsg("✅ Подтверждение сделано (MVP). Теперь доступно «Занять 3-е место».");
       });
 
       qs("#btnReject").addEventListener("click", () => {
@@ -343,7 +321,6 @@
         setStatus(l, "none");
         showMsg("⛔ Отклонено (MVP). Сброс участия в линии.");
       });
-
     })();
   </script>
 </body>
