@@ -1,4 +1,4 @@
-<!doctype html>
+  <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -6,10 +6,11 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Локально: только анимация нажатия + лёгкая читабельность неактивных табов.
-       Активный дизайн линии берём ИЗ styles.css через .tab-active (твой "старый" вид). -->
+  <!-- Локально:
+       - не трогаем твой "старый" активный дизайн линий (tab-active из styles.css)
+       - добавляем: нажатие, яркие disabled, замочки, подсказки, пульс -->
   <style>
-    /* Красивая реакция на нажатие (все кнопки) — не меняет цвета/ободки */
+    /* Красивая реакция на нажатие (все кнопки) — не меняет твои цвета/ободки */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -23,9 +24,69 @@
     #tab10, #tab50, #tab100{
       opacity: .92;
     }
-    /* А активному — 1.0 (если вдруг общий opacity мешает) */
     .tab-active{
       opacity: 1 !important;
+    }
+
+    /* =========================
+       Disabled-кнопки: ярче и читабельнее
+       (но всё ещё "недоступны")
+    ========================= */
+    button:disabled,
+    .btn-main:disabled,
+    .btn-secondary:disabled{
+      opacity: 1;
+      cursor: not-allowed;
+      filter: none;
+
+      background: linear-gradient(180deg, rgba(30,65,86,.92), rgba(16,38,52,.92));
+      border: 1px solid rgba(255, 210, 90, .22);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        inset 0 0 0 2px rgba(255, 210, 90, .06),
+        0 10px 22px rgba(0,0,0,.35);
+      color: rgba(235, 245, 255, .82);
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+    }
+
+    /* =========================
+       🔒 Замочек у заблокированных кнопок
+    ========================= */
+    .btn-locked{
+      position: relative;
+      padding-left: 42px;
+    }
+    .btn-locked::before{
+      content: "🔒";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: .9;
+      font-size: 18px;
+    }
+
+    /* =========================
+       Подсказка под кнопкой
+    ========================= */
+    .btn-hint{
+      font-size: 13px;
+      line-height: 1.35;
+      margin-top: -4px;
+      margin-left: 8px;
+      opacity: .78;
+    }
+
+    /* =========================
+       Пульсация "только что стала доступной"
+    ========================= */
+    @keyframes softPulse {
+      0%   { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
+      50%  { transform: translateY(-1px) scale(1.01); box-shadow: 0 0 18px rgba(255,210,90,.22); }
+      100% { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
+    }
+    .pulse-once{
+      animation: softPulse .9s ease-in-out 2;
     }
   </style>
 </head>
@@ -56,6 +117,10 @@
         <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
         <button class="btn-secondary" id="btnReject" type="button" disabled>Отклонить</button>
       </div>
+
+      <!-- Подсказки под кнопками -->
+      <div class="btn-hint" id="hintTake3" style="display:none;">Станет доступно после подтверждения помощи.</div>
+      <div class="btn-hint" id="hintConfirm" style="display:none;">Доступно только получателю №1.</div>
 
       <!-- Если не участвует в линии -->
       <div id="joinBox" style="display:none; margin-top:16px;">
@@ -150,15 +215,24 @@
       qs("#btnReject").disabled = !reject;
     }
 
-    // ✅ Возвращаем твой старый дизайн:
-    // активность таба = класс .tab-active (он уже описан в styles.css)
+    // Активность таба = класс .tab-active (описан в styles.css)
     function setTabActive(line) {
       for (const l of LINES) {
         const btn = qs("#tab" + l);
-
-        // Ничего не перекидываем btn-main/btn-secondary — остаётся твой “банковский” вид
         btn.classList.toggle("tab-active", l === line);
       }
+    }
+
+    function setLocked(btn, locked) {
+      if (!btn) return;
+      btn.classList.toggle("btn-locked", !!locked);
+    }
+
+    function pulse(btn) {
+      if (!btn) return;
+      btn.classList.remove("pulse-once");
+      void btn.offsetWidth; // перезапуск
+      btn.classList.add("pulse-once");
     }
 
     function renderTree(tree) {
@@ -191,18 +265,44 @@
       const data = state.lines[String(line)];
       const status = data.status;
 
+      // элементы кнопок/подсказок
+      const btnTake3 = qs("#btnTake3");
+      const btnConfirm = qs("#btnConfirm");
+      const btnReject = qs("#btnReject");
+
+      const hintTake3 = qs("#hintTake3");
+      const hintConfirm = qs("#hintConfirm");
+
+      // поймать "кнопка стала доступной"
+      const prevKey = "prev_status_" + String(line);
+      const prevStatus = localStorage.getItem(prevKey) || "";
+      localStorage.setItem(prevKey, status);
+
       setTabActive(line);
       qs("#lineTitle").textContent = `Линия: ${line} ₴`;
 
       const isNone = status === "none";
       qs("#joinBox").style.display = isNone ? "block" : "none";
 
+      // по умолчанию всё выключено
       setButtonsEnabled({ take3: false, confirm: false, reject: false });
+
+      // скрываем подсказки по умолчанию
+      if (hintTake3) hintTake3.style.display = "none";
+      if (hintConfirm) hintConfirm.style.display = "none";
+
+      // по умолчанию считаем всё заблокированным (потом точечно снимем)
+      setLocked(btnTake3, true);
+      setLocked(btnConfirm, true);
+      setLocked(btnReject, true);
 
       if (isNone) {
         qs("#statusBox").innerHTML =
           `Статус: <b>не участвуете</b><br>` +
           `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
+
+        if (hintTake3) hintTake3.style.display = "block";
+        // confirm/reject тут никому не нужны
       }
 
       if (status === "candidate_waiting") {
@@ -227,6 +327,20 @@
           </div>`;
 
         setButtonsEnabled({ take3: false, confirm: canModerate, reject: canModerate });
+
+        // кандидату недоступно — показываем причину
+        if (hintTake3) hintTake3.style.display = "block";
+        if (!canModerate && hintConfirm) hintConfirm.style.display = "block";
+
+        // замки: кандидату — да, получателю — нет на confirm/reject
+        setLocked(btnTake3, true);
+        setLocked(btnConfirm, !canModerate);
+        setLocked(btnReject, !canModerate);
+
+        // если для получателя кнопки стали доступными — мягкий пульс
+        if (canModerate && prevStatus !== "candidate_waiting") {
+          pulse(btnConfirm);
+        }
       }
 
       if (status === "confirmed_can_take3") {
@@ -248,13 +362,29 @@
           </div>`;
 
         setButtonsEnabled({ take3: true, confirm: false, reject: false });
+
+        // разблокируем take3, остальные — под замком
+        setLocked(btnTake3, false);
+        setLocked(btnConfirm, true);
+        setLocked(btnReject, true);
+
+        // пульс "стало доступно"
+        if (prevStatus !== "confirmed_can_take3") {
+          pulse(btnTake3);
+        }
       }
 
       if (status === "member") {
         qs("#statusBox").innerHTML =
           `Статус: <b>участник</b><br>` +
           `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
+
         setButtonsEnabled({ take3: false, confirm: false, reject: false });
+
+        // всё под замком (как “служебное”)
+        setLocked(btnTake3, true);
+        setLocked(btnConfirm, true);
+        setLocked(btnReject, true);
       }
 
       qs("#treeBox").innerHTML = renderTree(data.tree);
@@ -306,6 +436,7 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
+      // действия (MVP)
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
@@ -328,4 +459,3 @@
 </body>
 </html>
 
- 
