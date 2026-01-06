@@ -34,8 +34,8 @@
         />
       </div>
 
-      <button class="btn-main" id="nextBtn">Далее → к оплате</button>
-      <button class="btn-secondary" onclick="history.back()">Назад</button>
+      <button class="btn-main" id="nextBtn" disabled>Далее → к оплате</button>
+      <button class="btn-secondary" id="backBtn" type="button">Назад</button>
 
       <div class="msg" id="msg"></div>
     </div>
@@ -43,7 +43,7 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // ===== ключи (как в cabinet.html) =====
+    // ===== ключи (как в cabinet.html / queue.html) =====
     const KEY_STATE = "cabinet_state";
     const KEY_ACTIVE_LINE = "active_line";
     const KEY_MY_ID = "my_id";
@@ -51,12 +51,17 @@
 
     const LINES = [10, 50, 100];
 
+    // ===== DOM =====
     const nick = document.getElementById("nick");
     const goal = document.getElementById("goal");
     const card = document.getElementById("card");
     const nextBtn = document.getElementById("nextBtn");
+    const backBtn = document.getElementById("backBtn");
     const lineLabel = document.getElementById("lineLabel");
     const msg = document.getElementById("msg");
+
+    // если вдруг что-то не нашлось — не ломаем страницу
+    if (!nick || !goal || !card || !nextBtn || !backBtn || !lineLabel || !msg) return;
 
     function showMsg(t) { msg.textContent = t || ""; }
 
@@ -64,7 +69,7 @@
       const p = new URLSearchParams(location.search);
       return {
         line: Number(p.get("line") || 0),
-        ref: p.get("ref") || "" // кто пригласил (может прийти из queue.html)
+        ref: p.get("ref") || "" // пригласивший (ref_owner)
       };
     }
 
@@ -79,18 +84,24 @@
     function ensureDefaults(state) {
       if (!state.lines) state.lines = {};
       for (const l of LINES) {
-        if (!state.lines[String(l)]) {
-          state.lines[String(l)] = {
+        const key = String(l);
+        if (!state.lines[key]) {
+          state.lines[key] = {
             status: "none",
-            profile: null, // тут будет {nick, goal, card}
+            profile: null, // {nick, goal, card}
             tree: { level1: [], level2: [] }
           };
+        } else {
+          // мягкая миграция старых сохранений
+          if (!("status" in state.lines[key])) state.lines[key].status = "none";
+          if (!("profile" in state.lines[key])) state.lines[key].profile = null;
+          if (!state.lines[key].tree) state.lines[key].tree = { level1: [], level2: [] };
         }
       }
       return state;
     }
 
-    // line может быть в url или в localStorage (fallback)
+    // line: URL -> localStorage -> 10
     function resolveLine() {
       const { line } = getParams();
       if (LINES.includes(line)) return line;
@@ -98,11 +109,10 @@
       const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
       if (LINES.includes(saved)) return saved;
 
-      // если вообще ничего — пусть будет 10
       return 10;
     }
 
-    // Форматирование карты: только цифры + пробелы каждые 4
+    // ===== форматирование карты =====
     function formatCard(value) {
       const digits = value.replace(/\D/g, "").slice(0, 16);
       return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
@@ -111,6 +121,7 @@
     function checkForm() {
       const nickOk = nick.value.trim().length > 0;
       const goalOk = goal.value.trim().length > 0;
+
       const digits = card.value.replace(/\D/g, "");
       const cardOk = digits.length === 16;
 
@@ -129,33 +140,33 @@
     const { ref } = getParams();
     if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
-    // my_id: в MVP пусть будет TEST123, если ещё нет
+    // my_id: MVP-заглушка (позже заменим на реальный генератор)
     if (!localStorage.getItem(KEY_MY_ID)) {
       localStorage.setItem(KEY_MY_ID, "TEST123");
     }
 
-    // Если ранее уже регистрировались в этой линии — подставим значения в поля
+    // подставим профиль, если он уже есть в этой линии
     let state = ensureDefaults(readState());
     const existingProfile = state.lines[String(line)]?.profile;
+
     if (existingProfile) {
       nick.value = existingProfile.nick || "";
       goal.value = existingProfile.goal || "";
       if (existingProfile.card) card.value = formatCard(existingProfile.card);
     }
 
-    // стартовое состояние кнопки
-    nextBtn.disabled = true;
-    nextBtn.classList.remove("is-active");
+    // ===== handlers =====
+    backBtn.addEventListener("click", () => history.back());
 
-    // обработчики
     card.addEventListener("input", () => {
       const before = card.value;
-      const beforePos = card.selectionStart;
+      const beforePos = card.selectionStart ?? card.value.length;
 
       card.value = formatCard(card.value);
 
+      // аккуратно двигаем курсор
       const diff = card.value.length - before.length;
-      const newPos = Math.max(0, (beforePos ?? card.value.length) + diff);
+      const newPos = Math.max(0, beforePos + diff);
       card.setSelectionRange(newPos, newPos);
 
       checkForm();
@@ -180,18 +191,19 @@
       state = ensureDefaults(readState());
       state.lines[String(line)].profile = { nick: n, goal: g, card: digits };
 
-      // === ставим статус по линии (после регистрации) ===
-      // Можно поменять на "none" если захочешь, но логичнее так:
+      // === после регистрации логично стать кандидатом и ждать подтверждения ===
       state.lines[String(line)].status = "candidate_waiting";
 
       writeState(state);
 
-      // переход на оплату (ref тоже протащим, если есть)
+      // === переход на оплату, ref_owner протаскиваем дальше ===
       const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
       const qs = `?line=${encodeURIComponent(line)}${refOwner ? `&ref=${encodeURIComponent(refOwner)}` : ""}`;
+
       window.location.href = "pay.html" + qs;
     });
 
+    // стартовая проверка
     checkForm();
   });
   </script>
