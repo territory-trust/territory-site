@@ -6,14 +6,31 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Лёгкая подсветка активной линии (не ломает твой styles.css) -->
+  <!-- Локальные правки: подсветка активной линии + анимация нажатия -->
   <style>
+    /* Активная кнопка линии (дорого, но заметно) */
     .line-tab-active{
       box-shadow:
-        0 0 0 2px rgba(255, 210, 90, .35) inset,
-        0 10px 22px rgba(0,0,0,.25);
-      border: 1px solid rgba(255, 210, 90, .45);
+        0 0 0 2px rgba(255, 210, 90, .38) inset,
+        0 10px 22px rgba(0,0,0,.28);
+      border: 1px solid rgba(255, 210, 90, .55);
       transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    /* Красивая реакция на нажатие (все кнопки) */
+    button, .btn-main, .btn-secondary{
+      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active, .btn-main:active, .btn-secondary:active{
+      transform: translateY(1px) scale(.99);
+      filter: brightness(.98);
+    }
+
+    /* Чуть заметнее неактивные табы линий */
+    #tab10, #tab50, #tab100{
+      opacity: .92;
     }
   </style>
 </head>
@@ -38,7 +55,7 @@
       <!-- Тут будет большой статус-блок -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
-      <!-- Кнопки действий (активность зависит от статуса) -->
+      <!-- Кнопки действий -->
       <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
         <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
         <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
@@ -55,7 +72,7 @@
         </button>
       </div>
 
-      <!-- Дерево приглашённых (2 уровня) -->
+      <!-- Дерево приглашённых -->
       <div style="margin-top:18px;">
         <div class="note" style="font-weight:700; margin-bottom:8px;">Дерево приглашённых (2 уровня)</div>
         <div class="note" id="treeBox" style="line-height:1.6;"></div>
@@ -74,11 +91,7 @@
 
   <script>
     // =========================================================
-    // ЛОГИКА MVP (без базы, без квитанций)
-    //
-    // my_id      = ваш собственный ID (показываем "Ваш ID")
-    // ref_owner  = ID того, по чьей ссылке вы пришли (пригласивший)
-    //
+    // MVP:
     // Состояния линии:
     // none | candidate_waiting | confirmed_can_take3 | member
     // =========================================================
@@ -91,7 +104,7 @@
       return {
         ref: p.get("ref") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || "" // для теста: role=receiver1 (получатель №1)
+        role: p.get("role") || "" // для теста: role=receiver1
       };
     }
 
@@ -101,11 +114,8 @@
     const KEY_STATE = "cabinet_state";
 
     function readState() {
-      try {
-        return JSON.parse(localStorage.getItem(KEY_STATE) || "{}");
-      } catch {
-        return {};
-      }
+      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+      catch { return {}; }
     }
     function writeState(state) {
       localStorage.setItem(KEY_STATE, JSON.stringify(state));
@@ -120,6 +130,9 @@
             status: "none",
             tree: { level1: [], level2: [] }
           };
+        } else {
+          if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
+          if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
         }
       }
       writeState(state);
@@ -142,21 +155,18 @@
       qs("#btnReject").disabled = !reject;
     }
 
-    // ✅ ФИКС подсветки табов: НЕ меняем класс на btn-main,
-    // а добавляем/убираем отдельный класс line-tab-active
-function setTabActive(line) {
-  for (const l of LINES) {
-    const btn = qs("#tab" + l);
-    // базовый класс
-    btn.classList.add("btn-secondary");
-    btn.classList.remove("btn-main");
+    // ✅ Подсветка табов линий (класс совпадает с CSS)
+    function setTabActive(line) {
+      for (const l of LINES) {
+        const btn = qs("#tab" + l);
 
-    // активность — отдельным классом
-    btn.classList.toggle("tab-active", l === line);
-  }
-}
+        // табы остаются "вторичными", а активность делаем отдельным классом
+        btn.classList.add("btn-secondary");
+        btn.classList.remove("btn-main");
 
-
+        btn.classList.toggle("line-tab-active", l === line);
+      }
+    }
 
     function renderTree(tree) {
       const l1 = tree?.level1 || [];
@@ -204,14 +214,13 @@ function setTabActive(line) {
       }
 
       if (status === "candidate_waiting") {
-        // большой статус-блок (как у тебя на скрине)
         qs("#statusBox").innerHTML =
           `<div style="
             margin-top:10px;
             padding:14px 14px;
             border-radius:14px;
-            border:1px solid rgba(255,210,90,.45);
-            box-shadow: 0 0 0 2px rgba(255,210,90,.2) inset;
+            border:1px solid rgba(255,210,90,.55);
+            box-shadow: 0 0 0 2px rgba(255,210,90,.20) inset;
             text-align:center;
           ">
             <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
@@ -225,7 +234,6 @@ function setTabActive(line) {
             </div>
           </div>`;
 
-        // у кандидата кнопок нет, а у получателя №1 появятся confirm/reject
         setButtonsEnabled({ take3: false, confirm: canModerate, reject: canModerate });
       }
 
@@ -235,7 +243,7 @@ function setTabActive(line) {
             margin-top:10px;
             padding:14px 14px;
             border-radius:14px;
-            border:1px solid rgba(120, 220, 140, .45);
+            border:1px solid rgba(120, 220, 140, .55);
             box-shadow: 0 0 0 2px rgba(120, 220, 140, .18) inset;
             text-align:center;
           ">
