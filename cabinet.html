@@ -6,19 +6,10 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Локальные правки: подсветка активной линии + анимация нажатия -->
+  <!-- Локально: только анимация нажатия + лёгкая читабельность неактивных табов.
+       Активный дизайн линии берём ИЗ styles.css через .tab-active (твой "старый" вид). -->
   <style>
-    /* Активная кнопка линии (дорого, но заметно) */
-    .line-tab-active{
-      box-shadow:
-        0 0 0 2px rgba(255, 210, 90, .38) inset,
-        0 10px 22px rgba(0,0,0,.28);
-      border: 1px solid rgba(255, 210, 90, .55);
-      transform: translateY(-1px);
-      filter: brightness(1.08);
-    }
-
-    /* Красивая реакция на нажатие (все кнопки) */
+    /* Красивая реакция на нажатие (все кнопки) — не меняет цвета/ободки */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -28,9 +19,13 @@
       filter: brightness(.98);
     }
 
-    /* Чуть заметнее неактивные табы линий */
+    /* Неактивные табы линий: чуть заметнее (не конфликтует с .tab-active) */
     #tab10, #tab50, #tab100{
       opacity: .92;
+    }
+    /* А активному — 1.0 (если вдруг общий opacity мешает) */
+    .tab-active{
+      opacity: 1 !important;
     }
   </style>
 </head>
@@ -52,7 +47,7 @@
       <!-- Блок линии -->
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
 
-      <!-- Тут будет большой статус-блок -->
+      <!-- Статус -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
       <!-- Кнопки действий -->
@@ -155,16 +150,14 @@
       qs("#btnReject").disabled = !reject;
     }
 
-    // ✅ Подсветка табов линий (класс совпадает с CSS)
+    // ✅ Возвращаем твой старый дизайн:
+    // активность таба = класс .tab-active (он уже описан в styles.css)
     function setTabActive(line) {
       for (const l of LINES) {
         const btn = qs("#tab" + l);
 
-        // табы остаются "вторичными", а активность делаем отдельным классом
-        btn.classList.add("btn-secondary");
-        btn.classList.remove("btn-main");
-
-        btn.classList.toggle("line-tab-active", l === line);
+        // Ничего не перекидываем btn-main/btn-secondary — остаётся твой “банковский” вид
+        btn.classList.toggle("tab-active", l === line);
       }
     }
 
@@ -204,7 +197,6 @@
       const isNone = status === "none";
       qs("#joinBox").style.display = isNone ? "block" : "none";
 
-      // по умолчанию всё выключено
       setButtonsEnabled({ take3: false, confirm: false, reject: false });
 
       if (isNone) {
@@ -285,7 +277,6 @@
         `Ваш ID: <b>${myId}</b>` +
         (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
 
-      // активная линия: URL → или первая где участвует → или сохранённая/дефолт
       const state = readState();
       if (LINES.includes(line)) {
         setActiveLine(line);
@@ -295,12 +286,10 @@
         else setActiveLine(getActiveLine());
       }
 
-      // табы
       qs("#tab10").addEventListener("click", () => setActiveLine(10));
       qs("#tab50").addEventListener("click", () => setActiveLine(50));
       qs("#tab100").addEventListener("click", () => setActiveLine(100));
 
-      // переходы
       qs("#btnPromo").addEventListener("click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
         location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
@@ -317,7 +306,6 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // действия (MVP)
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
@@ -340,3 +328,4 @@
 </body>
 </html>
 
+ 
