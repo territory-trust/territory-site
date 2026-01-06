@@ -27,19 +27,39 @@
   </div>
 
   <script>
-    // сохраняем line (50/10/100) и возвращаемся правильно
-    const params = new URLSearchParams(location.search);
-    const line = params.get("line") || localStorage.getItem("line") || "50";
-    localStorage.setItem("line", line);
+    document.addEventListener("DOMContentLoaded", () => {
+      // ===== единые ключи проекта =====
+      const KEY_ACTIVE_LINE = "active_line";
+      const KEY_MY_ID = "my_id";
+      const LINES = ["10","50","100"];
 
-    document.getElementById("backBtn").addEventListener("click", () => {
-      location.href = "pay.html?line=" + encodeURIComponent(line);
-    });
+      // line: URL -> active_line -> fallback 50
+      const params = new URLSearchParams(location.search);
+      const lineFromUrl = params.get("line") || "";
+      const lineFromStorage = localStorage.getItem(KEY_ACTIVE_LINE) || "";
+      const line = LINES.includes(lineFromUrl) ? lineFromUrl
+                : (LINES.includes(lineFromStorage) ? lineFromStorage : "50");
 
-    document.getElementById("goBtn").addEventListener("click", () => {
-      // TODO: сюда поставить реальный кабинет, когда будет готов
-      location.href = "cabinet.html";
+      // фиксируем активную линию в правильном ключе
+      localStorage.setItem(KEY_ACTIVE_LINE, line);
+
+      // my_id нужен кабинету (если вдруг ещё не задан)
+      const myId = localStorage.getItem(KEY_MY_ID) || "TEST123";
+      localStorage.setItem(KEY_MY_ID, myId);
+
+      // Назад — возвращаемся в оплату на ЭТУ линию
+      document.getElementById("backBtn").addEventListener("click", () => {
+        location.href = "pay.html?line=" + encodeURIComponent(line);
+      });
+
+      // Дальше — в кабинет на ЭТУ линию (и с ref=myId)
+      document.getElementById("goBtn").addEventListener("click", () => {
+        location.href =
+          "cabinet.html?ref=" + encodeURIComponent(myId) +
+          "&line=" + encodeURIComponent(line);
+      });
     });
   </script>
 </body>
 </html>
+
