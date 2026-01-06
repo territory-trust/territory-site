@@ -1,4 +1,4 @@
-  <!doctype html>
+   <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -6,11 +6,7 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Локально:
-       - не трогаем твой "старый" активный дизайн линий (tab-active из styles.css)
-       - добавляем: нажатие, яркие disabled, замочки, подсказки, пульс -->
   <style>
-    /* Красивая реакция на нажатие (все кнопки) — не меняет твои цвета/ободки */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -20,25 +16,32 @@
       filter: brightness(.98);
     }
 
-    /* Неактивные табы линий: чуть заметнее (не конфликтует с .tab-active) */
-    #tab10, #tab50, #tab100{
-      opacity: .92;
+    #tab10, #tab50, #tab100{ opacity: .92; }
+    .tab-active{ opacity: 1 !important; }
+
+    /* ======= РЯД КНОПОК (слева, одинаковая ширина) ======= */
+    .actions-col{
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* слева */
+      gap: 12px;
     }
-    .tab-active{
-      opacity: 1 !important;
+    .action-item{
+      width: min(420px, 100%); /* одинаковая ширина, но не шире карточки */
+    }
+    .action-item > button{
+      width: 100%;
+      display: block;
     }
 
-    /* =========================
-       Disabled-кнопки: ярче и читабельнее
-       (но всё ещё "недоступны")
-    ========================= */
+    /* ======= Disabled: видно, но заблокировано ======= */
     button:disabled,
     .btn-main:disabled,
     .btn-secondary:disabled{
       opacity: 1;
       cursor: not-allowed;
       filter: none;
-
       background: linear-gradient(180deg, rgba(30,65,86,.92), rgba(16,38,52,.92));
       border: 1px solid rgba(255, 210, 90, .22);
       box-shadow:
@@ -49,9 +52,7 @@
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
     }
 
-    /* =========================
-       🔒 Замочек у заблокированных кнопок
-    ========================= */
+    /* 🔒 */
     .btn-locked{
       position: relative;
       padding-left: 42px;
@@ -64,30 +65,26 @@
       transform: translateY(-50%);
       opacity: .9;
       font-size: 18px;
+      line-height: 1;
     }
 
-    /* =========================
-       Подсказка под кнопкой
-    ========================= */
+    /* Подсказки под конкретной кнопкой */
     .btn-hint{
       font-size: 13px;
       line-height: 1.35;
-      margin-top: -4px;
-      margin-left: 8px;
+      margin-top: 6px;
+      margin-left: 6px;
       opacity: .78;
     }
 
-    /* =========================
-       Пульсация "только что стала доступной"
-    ========================= */
     @keyframes softPulse {
       0%   { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
       50%  { transform: translateY(-1px) scale(1.01); box-shadow: 0 0 18px rgba(255,210,90,.22); }
       100% { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
     }
-    .pulse-once{
-      animation: softPulse .9s ease-in-out 2;
-    }
+    .pulse-once{ animation: softPulse .9s ease-in-out 2; }
+
+    .moderator-actions{ display:none; }
   </style>
 </head>
 
@@ -98,31 +95,36 @@
 
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
-      <!-- Переключатель линий -->
       <div style="display:flex; gap:10px; margin:16px 0;">
         <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
         <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
         <button class="btn-secondary" id="tab100" type="button">100 ₴</button>
       </div>
 
-      <!-- Блок линии -->
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
-
-      <!-- Статус -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
-      <!-- Кнопки действий -->
-      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
-        <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
-        <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
-        <button class="btn-secondary" id="btnReject" type="button" disabled>Отклонить</button>
+      <!-- ======= КНОПКИ (одинаковый размер, слева, в ряд вертикально) ======= -->
+      <div class="actions-col" id="actionsCol">
+
+        <!-- Кандидатская кнопка -->
+        <div class="action-item">
+          <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
+          <div class="btn-hint" id="hintTake3" style="display:none;">Станет доступно после подтверждения помощи.</div>
+        </div>
+
+        <!-- Модератор (получатель №1) -->
+        <div class="action-item moderator-actions" id="moderatorBox">
+          <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
+          <div class="btn-hint" id="hintConfirm" style="display:none;">Доступно только получателю №1.</div>
+        </div>
+
+        <div class="action-item moderator-actions" id="moderatorBox2">
+          <button class="btn-secondary" id="btnReject" type="button" disabled>Отклонить</button>
+        </div>
+
       </div>
 
-      <!-- Подсказки под кнопками -->
-      <div class="btn-hint" id="hintTake3" style="display:none;">Станет доступно после подтверждения помощи.</div>
-      <div class="btn-hint" id="hintConfirm" style="display:none;">Доступно только получателю №1.</div>
-
-      <!-- Если не участвует в линии -->
       <div id="joinBox" style="display:none; margin-top:16px;">
         <div class="note" style="line-height:1.6;">
           В этой линии вы пока не участвуете.
@@ -132,7 +134,6 @@
         </button>
       </div>
 
-      <!-- Дерево приглашённых -->
       <div style="margin-top:18px;">
         <div class="note" style="font-weight:700; margin-bottom:8px;">Дерево приглашённых (2 уровня)</div>
         <div class="note" id="treeBox" style="line-height:1.6;"></div>
@@ -150,12 +151,6 @@
   </div>
 
   <script>
-    // =========================================================
-    // MVP:
-    // Состояния линии:
-    // none | candidate_waiting | confirmed_can_take3 | member
-    // =========================================================
-
     const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
 
@@ -164,7 +159,7 @@
       return {
         ref: p.get("ref") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || "" // для теста: role=receiver1
+        role: p.get("role") || ""
       };
     }
 
@@ -173,23 +168,15 @@
     const KEY_REF_OWNER = "ref_owner";
     const KEY_STATE = "cabinet_state";
 
-    function readState() {
-      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
-      catch { return {}; }
-    }
-    function writeState(state) {
-      localStorage.setItem(KEY_STATE, JSON.stringify(state));
-    }
+    function readState(){ try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); } catch { return {}; } }
+    function writeState(state){ localStorage.setItem(KEY_STATE, JSON.stringify(state)); }
 
     function ensureDefaults() {
       const state = readState();
       if (!state.lines) state.lines = {};
       for (const line of LINES) {
         if (!state.lines[String(line)]) {
-          state.lines[String(line)] = {
-            status: "none",
-            tree: { level1: [], level2: [] }
-          };
+          state.lines[String(line)] = { status: "none", tree: { level1: [], level2: [] } };
         } else {
           if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
           if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
@@ -200,8 +187,7 @@
 
     function getActiveLine() {
       const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
-      if (LINES.includes(saved)) return saved;
-      return 50;
+      return LINES.includes(saved) ? saved : 50;
     }
 
     function setActiveLine(line) {
@@ -209,29 +195,19 @@
       render(line);
     }
 
-    function setButtonsEnabled({ take3, confirm, reject }) {
-      qs("#btnTake3").disabled = !take3;
-      qs("#btnConfirm").disabled = !confirm;
-      qs("#btnReject").disabled = !reject;
-    }
-
-    // Активность таба = класс .tab-active (описан в styles.css)
     function setTabActive(line) {
-      for (const l of LINES) {
-        const btn = qs("#tab" + l);
-        btn.classList.toggle("tab-active", l === line);
-      }
+      for (const l of LINES) qs("#tab" + l).classList.toggle("tab-active", l === line);
     }
 
-    function setLocked(btn, locked) {
+    function setLocked(btn, locked){
       if (!btn) return;
       btn.classList.toggle("btn-locked", !!locked);
     }
 
-    function pulse(btn) {
+    function pulse(btn){
       if (!btn) return;
       btn.classList.remove("pulse-once");
-      void btn.offsetWidth; // перезапуск
+      void btn.offsetWidth;
       btn.classList.add("pulse-once");
     }
 
@@ -246,9 +222,7 @@
       `;
     }
 
-    function showMsg(t) {
-      qs("#msg").textContent = t;
-    }
+    function showMsg(t){ qs("#msg").textContent = t; }
 
     function setStatus(line, status) {
       const state = readState();
@@ -265,7 +239,6 @@
       const data = state.lines[String(line)];
       const status = data.status;
 
-      // элементы кнопок/подсказок
       const btnTake3 = qs("#btnTake3");
       const btnConfirm = qs("#btnConfirm");
       const btnReject = qs("#btnReject");
@@ -273,7 +246,9 @@
       const hintTake3 = qs("#hintTake3");
       const hintConfirm = qs("#hintConfirm");
 
-      // поймать "кнопка стала доступной"
+      const moderatorBox = qs("#moderatorBox");
+      const moderatorBox2 = qs("#moderatorBox2");
+
       const prevKey = "prev_status_" + String(line);
       const prevStatus = localStorage.getItem(prevKey) || "";
       localStorage.setItem(prevKey, status);
@@ -284,25 +259,25 @@
       const isNone = status === "none";
       qs("#joinBox").style.display = isNone ? "block" : "none";
 
-      // по умолчанию всё выключено
-      setButtonsEnabled({ take3: false, confirm: false, reject: false });
-
-      // скрываем подсказки по умолчанию
-      if (hintTake3) hintTake3.style.display = "none";
-      if (hintConfirm) hintConfirm.style.display = "none";
-
-      // по умолчанию считаем всё заблокированным (потом точечно снимем)
+      // дефолт
+      btnTake3.disabled = true;
       setLocked(btnTake3, true);
-      setLocked(btnConfirm, true);
-      setLocked(btnReject, true);
+      hintTake3.style.display = "none";
 
-      if (isNone) {
+      moderatorBox.style.display = "none";
+      moderatorBox2.style.display = "none";
+      hintConfirm.style.display = "none";
+
+      // confirm/reject по умолчанию выключены (если вдруг блок показан)
+      btnConfirm.disabled = true;
+      btnReject.disabled = true;
+
+      if (status === "none") {
         qs("#statusBox").innerHTML =
           `Статус: <b>не участвуете</b><br>` +
           `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
 
-        if (hintTake3) hintTake3.style.display = "block";
-        // confirm/reject тут никому не нужны
+        hintTake3.style.display = "block";
       }
 
       if (status === "candidate_waiting") {
@@ -326,20 +301,20 @@
             </div>
           </div>`;
 
-        setButtonsEnabled({ take3: false, confirm: canModerate, reject: canModerate });
+        hintTake3.style.display = "block";
 
-        // кандидату недоступно — показываем причину
-        if (hintTake3) hintTake3.style.display = "block";
-        if (!canModerate && hintConfirm) hintConfirm.style.display = "block";
+        // Только получателю №1 показываем confirm/reject
+        if (canModerate) {
+          moderatorBox.style.display = "block";
+          moderatorBox2.style.display = "block";
 
-        // замки: кандидату — да, получателю — нет на confirm/reject
-        setLocked(btnTake3, true);
-        setLocked(btnConfirm, !canModerate);
-        setLocked(btnReject, !canModerate);
+          btnConfirm.disabled = false;
+          btnReject.disabled = false;
 
-        // если для получателя кнопки стали доступными — мягкий пульс
-        if (canModerate && prevStatus !== "candidate_waiting") {
-          pulse(btnConfirm);
+          setLocked(btnConfirm, false);
+          setLocked(btnReject, false);
+
+          if (prevStatus !== "candidate_waiting") pulse(btnConfirm);
         }
       }
 
@@ -361,30 +336,16 @@
             </div>
           </div>`;
 
-        setButtonsEnabled({ take3: true, confirm: false, reject: false });
-
-        // разблокируем take3, остальные — под замком
+        btnTake3.disabled = false;
         setLocked(btnTake3, false);
-        setLocked(btnConfirm, true);
-        setLocked(btnReject, true);
 
-        // пульс "стало доступно"
-        if (prevStatus !== "confirmed_can_take3") {
-          pulse(btnTake3);
-        }
+        if (prevStatus !== "confirmed_can_take3") pulse(btnTake3);
       }
 
       if (status === "member") {
         qs("#statusBox").innerHTML =
           `Статус: <b>участник</b><br>` +
           `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
-
-        setButtonsEnabled({ take3: false, confirm: false, reject: false });
-
-        // всё под замком (как “служебное”)
-        setLocked(btnTake3, true);
-        setLocked(btnConfirm, true);
-        setLocked(btnReject, true);
       }
 
       qs("#treeBox").innerHTML = renderTree(data.tree);
@@ -395,14 +356,12 @@
       ensureDefaults();
 
       const { ref, line } = getParams();
-
       if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
       const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
       localStorage.setItem(KEY_MY_ID, myId);
 
       const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
-
       qs("#whoNote").innerHTML =
         `Ваш ID: <b>${myId}</b>` +
         (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
@@ -436,7 +395,6 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // действия (MVP)
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
@@ -458,4 +416,4 @@
   </script>
 </body>
 </html>
-
+ 
