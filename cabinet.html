@@ -1,4 +1,4 @@
-   <!doctype html>
+  <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -7,8 +7,9 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
+    /* ===== Нажатие (красивая реакция на все кнопки) ===== */
     button, .btn-main, .btn-secondary{
-      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
+      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
       -webkit-tap-highlight-color: transparent;
     }
     button:active, .btn-main:active, .btn-secondary:active{
@@ -16,75 +17,70 @@
       filter: brightness(.98);
     }
 
+    /* ===== Табы линий: неактивные чуть заметнее, активный — через .tab-active из styles.css ===== */
     #tab10, #tab50, #tab100{ opacity: .92; }
     .tab-active{ opacity: 1 !important; }
 
-    /* ======= РЯД КНОПОК (слева, одинаковая ширина) ======= */
-    .actions-col{
-      margin-top: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start; /* слева */
-      gap: 12px;
+    /* ===== Кнопки действий: одинаковые, в столбик, слева ===== */
+    .actions{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:12px;
+      margin-top:14px;
     }
-    .action-item{
-      width: min(420px, 100%); /* одинаковая ширина, но не шире карточки */
-    }
-    .action-item > button{
-      width: 100%;
-      display: block;
+    .actions button{
+      width:100%;
+      max-width: 420px;
+      text-align:left;
+      padding-left: 56px; /* место под иконку */
+      position:relative;
     }
 
-    /* ======= Disabled: видно, но заблокировано ======= */
-    button:disabled,
-    .btn-main:disabled,
-    .btn-secondary:disabled{
-      opacity: 1;
+    /* Иконка слева внутри кнопки */
+    .btn-ico{
+      position:absolute;
+      left:18px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:18px;
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    /* Disabled — не “серые тени”, а читаемо и заметно */
+    .actions button:disabled{
+      opacity: .72;                /* было слишком тускло — делаем читабельно */
+      filter: saturate(1.05) brightness(1.02);
       cursor: not-allowed;
-      filter: none;
-      background: linear-gradient(180deg, rgba(30,65,86,.92), rgba(16,38,52,.92));
-      border: 1px solid rgba(255, 210, 90, .22);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        inset 0 0 0 2px rgba(255, 210, 90, .06),
-        0 10px 22px rgba(0,0,0,.35);
-      color: rgba(235, 245, 255, .82);
-      text-shadow: 0 1px 0 rgba(0,0,0,.35);
     }
 
-    /* 🔒 */
-    .btn-locked{
-      position: relative;
-      padding-left: 42px;
+    /* Микро-подсказка под кнопкой */
+    .microhint{
+      margin-top:-6px;
+      margin-left: 10px;
+      font-size: 14px;
+      line-height: 1.25;
+      opacity: .85;
     }
-    .btn-locked::before{
-      content: "🔒";
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      opacity: .9;
-      font-size: 18px;
-      line-height: 1;
-    }
+    .microhint.hidden{ display:none; }
 
-    /* Подсказки под конкретной кнопкой */
-    .btn-hint{
-      font-size: 13px;
-      line-height: 1.35;
-      margin-top: 6px;
-      margin-left: 6px;
-      opacity: .78;
-    }
-
+    /* Пульсация для кнопки, которая стала доступной */
     @keyframes softPulse {
-      0%   { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
-      50%  { transform: translateY(-1px) scale(1.01); box-shadow: 0 0 18px rgba(255,210,90,.22); }
-      100% { transform: translateY(0) scale(1); box-shadow: 0 0 0 rgba(255,210,90,0); }
+      0%   { box-shadow: 0 0 0 0 rgba(255,210,90,.35); }
+      60%  { box-shadow: 0 0 0 10px rgba(255,210,90,0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,210,90,0); }
     }
-    .pulse-once{ animation: softPulse .9s ease-in-out 2; }
+    .just-enabled{
+      animation: softPulse 1.2s ease-out 1;
+    }
 
-    .moderator-actions{ display:none; }
+    /* Заголовок дерева — крупнее */
+    .treeTitle{
+      font-weight: 900;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 
@@ -95,6 +91,7 @@
 
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
+      <!-- Переключатель линий -->
       <div style="display:flex; gap:10px; margin:16px 0;">
         <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
         <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
@@ -102,40 +99,44 @@
       </div>
 
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
+
+      <!-- Статус -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
-      <!-- ======= КНОПКИ (одинаковый размер, слева, в ряд вертикально) ======= -->
-      <div class="actions-col" id="actionsCol">
+      <!-- Кнопки действий -->
+      <div class="actions">
+        <button class="btn-main" id="btnTake3" type="button" disabled>
+          <span class="btn-ico" id="icoTake3">🔒</span>
+          Занять 3-е место
+        </button>
+        <div class="microhint hidden" id="hintTake3">Станет доступно после подтверждения помощи.</div>
 
-        <!-- Кандидатская кнопка -->
-        <div class="action-item">
-          <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
-          <div class="btn-hint" id="hintTake3" style="display:none;">Станет доступно после подтверждения помощи.</div>
-        </div>
+        <button class="btn-main" id="btnConfirm" type="button" disabled>
+          <span class="btn-ico" id="icoConfirm">🔒</span>
+          Подтвердить помощь
+        </button>
+        <div class="microhint hidden" id="hintConfirm">Доступно только получателю №1.</div>
 
-        <!-- Модератор (получатель №1) -->
-        <div class="action-item moderator-actions" id="moderatorBox">
-          <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
-          <div class="btn-hint" id="hintConfirm" style="display:none;">Доступно только получателю №1.</div>
-        </div>
-
-        <div class="action-item moderator-actions" id="moderatorBox2">
-          <button class="btn-secondary" id="btnReject" type="button" disabled>Отклонить</button>
-        </div>
-
+        <button class="btn-secondary" id="btnReject" type="button" disabled>
+          <span class="btn-ico" id="icoReject">🔒</span>
+          Отклонить
+        </button>
+        <div class="microhint hidden" id="hintReject">Доступно только получателю №1.</div>
       </div>
 
+      <!-- Если не участвует в линии -->
       <div id="joinBox" style="display:none; margin-top:16px;">
         <div class="note" style="line-height:1.6;">
-          В этой линии вы пока не участвуете.
+          Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».
         </div>
         <button class="btn-main" id="btnGoQueue" type="button" style="margin-top:10px;">
           Перейти в «Очередь участников»
         </button>
       </div>
 
+      <!-- Дерево приглашённых -->
       <div style="margin-top:18px;">
-        <div class="note" style="font-weight:700; margin-bottom:8px;">Дерево приглашённых (2 уровня)</div>
+        <div class="note treeTitle">Дерево приглашённых</div>
         <div class="note" id="treeBox" style="line-height:1.6;"></div>
       </div>
 
@@ -151,6 +152,12 @@
   </div>
 
   <script>
+    // =========================================================
+    // MVP:
+    // Состояния линии:
+    // none | candidate_waiting | confirmed_can_take3 | member
+    // =========================================================
+
     const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
 
@@ -159,7 +166,7 @@
       return {
         ref: p.get("ref") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || ""
+        role: p.get("role") || "" // для теста: role=receiver1
       };
     }
 
@@ -167,16 +174,33 @@
     const KEY_MY_ID = "my_id";
     const KEY_REF_OWNER = "ref_owner";
     const KEY_STATE = "cabinet_state";
+    const KEY_LAST_STATUS = "last_status_by_line"; // для пульсации после смены
 
-    function readState(){ try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); } catch { return {}; } }
-    function writeState(state){ localStorage.setItem(KEY_STATE, JSON.stringify(state)); }
+    function readState() {
+      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+      catch { return {}; }
+    }
+    function writeState(state) {
+      localStorage.setItem(KEY_STATE, JSON.stringify(state));
+    }
+
+    function readLastStatusMap(){
+      try { return JSON.parse(localStorage.getItem(KEY_LAST_STATUS) || "{}"); }
+      catch { return {}; }
+    }
+    function writeLastStatusMap(map){
+      localStorage.setItem(KEY_LAST_STATUS, JSON.stringify(map));
+    }
 
     function ensureDefaults() {
       const state = readState();
       if (!state.lines) state.lines = {};
       for (const line of LINES) {
         if (!state.lines[String(line)]) {
-          state.lines[String(line)] = { status: "none", tree: { level1: [], level2: [] } };
+          state.lines[String(line)] = {
+            status: "none",
+            tree: { level1: [], level2: [] }
+          };
         } else {
           if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
           if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
@@ -187,7 +211,8 @@
 
     function getActiveLine() {
       const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
-      return LINES.includes(saved) ? saved : 50;
+      if (LINES.includes(saved)) return saved;
+      return 50;
     }
 
     function setActiveLine(line) {
@@ -196,19 +221,10 @@
     }
 
     function setTabActive(line) {
-      for (const l of LINES) qs("#tab" + l).classList.toggle("tab-active", l === line);
-    }
-
-    function setLocked(btn, locked){
-      if (!btn) return;
-      btn.classList.toggle("btn-locked", !!locked);
-    }
-
-    function pulse(btn){
-      if (!btn) return;
-      btn.classList.remove("pulse-once");
-      void btn.offsetWidth;
-      btn.classList.add("pulse-once");
+      for (const l of LINES) {
+        const btn = qs("#tab" + l);
+        btn.classList.toggle("tab-active", l === line); // стиль берём из styles.css
+      }
     }
 
     function renderTree(tree) {
@@ -222,13 +238,38 @@
       `;
     }
 
-    function showMsg(t){ qs("#msg").textContent = t; }
+    function showMsg(t) { qs("#msg").textContent = t; }
 
     function setStatus(line, status) {
       const state = readState();
       state.lines[String(line)].status = status;
       writeState(state);
       render(line);
+    }
+
+    // ===== UI helpers для кнопок =====
+    function setBtnState(btnId, icoId, hintId, { enabled, icon, hintText, pulse }) {
+      const btn = qs(btnId);
+      const ico = qs(icoId);
+      const hint = qs(hintId);
+
+      btn.disabled = !enabled;
+      ico.textContent = icon || (enabled ? "✅" : "🔒");
+
+      if (hintText) {
+        hint.textContent = hintText;
+        hint.classList.remove("hidden");
+      } else {
+        hint.classList.add("hidden");
+      }
+
+      if (pulse) {
+        btn.classList.remove("just-enabled");
+        void btn.offsetWidth; // reflow
+        btn.classList.add("just-enabled");
+      } else {
+        btn.classList.remove("just-enabled");
+      }
     }
 
     function render(line) {
@@ -239,19 +280,11 @@
       const data = state.lines[String(line)];
       const status = data.status;
 
-      const btnTake3 = qs("#btnTake3");
-      const btnConfirm = qs("#btnConfirm");
-      const btnReject = qs("#btnReject");
-
-      const hintTake3 = qs("#hintTake3");
-      const hintConfirm = qs("#hintConfirm");
-
-      const moderatorBox = qs("#moderatorBox");
-      const moderatorBox2 = qs("#moderatorBox2");
-
-      const prevKey = "prev_status_" + String(line);
-      const prevStatus = localStorage.getItem(prevKey) || "";
-      localStorage.setItem(prevKey, status);
+      // Пульсация при смене статуса (когда кнопка стала доступной)
+      const lastMap = readLastStatusMap();
+      const prevStatus = lastMap[String(line)] || "";
+      lastMap[String(line)] = status;
+      writeLastStatusMap(lastMap);
 
       setTabActive(line);
       qs("#lineTitle").textContent = `Линия: ${line} ₴`;
@@ -259,25 +292,11 @@
       const isNone = status === "none";
       qs("#joinBox").style.display = isNone ? "block" : "none";
 
-      // дефолт
-      btnTake3.disabled = true;
-      setLocked(btnTake3, true);
-      hintTake3.style.display = "none";
-
-      moderatorBox.style.display = "none";
-      moderatorBox2.style.display = "none";
-      hintConfirm.style.display = "none";
-
-      // confirm/reject по умолчанию выключены (если вдруг блок показан)
-      btnConfirm.disabled = true;
-      btnReject.disabled = true;
-
-      if (status === "none") {
+      // Статус-блок
+      if (isNone) {
         qs("#statusBox").innerHTML =
           `Статус: <b>не участвуете</b><br>` +
           `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
-
-        hintTake3.style.display = "block";
       }
 
       if (status === "candidate_waiting") {
@@ -300,22 +319,6 @@
               (таймер подключим позже)
             </div>
           </div>`;
-
-        hintTake3.style.display = "block";
-
-        // Только получателю №1 показываем confirm/reject
-        if (canModerate) {
-          moderatorBox.style.display = "block";
-          moderatorBox2.style.display = "block";
-
-          btnConfirm.disabled = false;
-          btnReject.disabled = false;
-
-          setLocked(btnConfirm, false);
-          setLocked(btnReject, false);
-
-          if (prevStatus !== "candidate_waiting") pulse(btnConfirm);
-        }
       }
 
       if (status === "confirmed_can_take3") {
@@ -335,11 +338,6 @@
               Теперь можно нажать <b>«Занять 3-е место»</b>.
             </div>
           </div>`;
-
-        btnTake3.disabled = false;
-        setLocked(btnTake3, false);
-
-        if (prevStatus !== "confirmed_can_take3") pulse(btnTake3);
       }
 
       if (status === "member") {
@@ -347,6 +345,48 @@
           `Статус: <b>участник</b><br>` +
           `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
       }
+
+      // ===== Логика доступности кнопок =====
+      // По умолчанию всё закрыто
+      let take3Enabled = false;
+      let confirmEnabled = false;
+      let rejectEnabled = false;
+
+      if (status === "confirmed_can_take3") take3Enabled = true;
+      if (status === "candidate_waiting" && canModerate) {
+        confirmEnabled = true;
+        rejectEnabled = true;
+      }
+
+      // Пульсируем, если кнопка стала доступной при смене статуса
+      const take3Pulse = (prevStatus !== "confirmed_can_take3" && status === "confirmed_can_take3");
+      const confirmPulse = (prevStatus !== "candidate_waiting" && status === "candidate_waiting" && canModerate);
+
+      // Подсказки под кнопками
+      const hintTake3 = take3Enabled ? "" : "Станет доступно после подтверждения помощи.";
+      const hintConfirm = confirmEnabled ? "" : "Доступно только получателю №1.";
+      const hintReject  = rejectEnabled  ? "" : "Доступно только получателю №1.";
+
+      setBtnState("#btnTake3", "#icoTake3", "#hintTake3", {
+        enabled: take3Enabled,
+        icon: take3Enabled ? "✅" : "🔒",
+        hintText: hintTake3,
+        pulse: take3Pulse
+      });
+
+      setBtnState("#btnConfirm", "#icoConfirm", "#hintConfirm", {
+        enabled: confirmEnabled,
+        icon: confirmEnabled ? "✅" : "🔒",
+        hintText: hintConfirm,
+        pulse: confirmPulse
+      });
+
+      setBtnState("#btnReject", "#icoReject", "#hintReject", {
+        enabled: rejectEnabled,
+        icon: rejectEnabled ? "⛔" : "🔒",
+        hintText: hintReject,
+        pulse: false
+      });
 
       qs("#treeBox").innerHTML = renderTree(data.tree);
       qs("#msg").textContent = "";
@@ -356,12 +396,14 @@
       ensureDefaults();
 
       const { ref, line } = getParams();
+
       if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
       const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
       localStorage.setItem(KEY_MY_ID, myId);
 
       const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
+
       qs("#whoNote").innerHTML =
         `Ваш ID: <b>${myId}</b>` +
         (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
@@ -375,10 +417,12 @@
         else setActiveLine(getActiveLine());
       }
 
+      // табы
       qs("#tab10").addEventListener("click", () => setActiveLine(10));
       qs("#tab50").addEventListener("click", () => setActiveLine(50));
       qs("#tab100").addEventListener("click", () => setActiveLine(100));
 
+      // переходы
       qs("#btnPromo").addEventListener("click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
         location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
@@ -395,6 +439,7 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
+      // действия (MVP)
       qs("#btnTake3").addEventListener("click", () => {
         const l = getActiveLine();
         setStatus(l, "member");
@@ -416,4 +461,4 @@
   </script>
 </body>
 </html>
- 
+
