@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -78,16 +78,6 @@
 
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
-      <!-- 🔑 ЯРЛЫК — ТОЛЬКО ЗДЕСЬ -->
-      <div class="box" style="margin-top:12px;">
-        <div class="note">
-          💡 Чтобы открывать <b>Личный кабинет</b> одним нажатием — добавьте ярлык на главный экран.
-          <br>
-          <small>Меню ⋮ → «Добавить на главный экран»</small>
-        </div>
-      </div>
-
-      <!-- Переключатель линий -->
       <div style="display:flex; gap:10px; margin:16px 0;">
         <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
         <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
@@ -115,47 +105,321 @@
       </div>
 
       <div id="joinBox" style="display:none; margin-top:16px;">
-        <button class="btn-main" id="btnGoQueue" type="button">
+        <button class="btn-main" id="btnGoQueue" type="button" style="margin-top:10px;">
           Перейти в «Очередь участников»
         </button>
       </div>
 
       <hr style="margin:18px 0; opacity:.25;" />
 
-      <div>
+      <div style="margin-top:6px;">
         <div class="treeTitle">Дерево приглашённых</div>
         <div class="note" id="treeBox" style="line-height:1.6;"></div>
       </div>
 
       <hr style="margin:18px 0; opacity:.25;" />
 
-      <div class="actions">
-        <button class="btn-secondary" id="btnPromo" type="button">Рекламные материалы</button>
-        <button class="btn-secondary" id="btnBackQueue" type="button">Очередь участников</button>
+      <div class="actions" style="margin-top:0;">
+        <!-- Fallback onclick: даже если JS упадёт, навигация будет -->
+        <button class="btn-secondary" id="btnPromo" type="button"
+          onclick="(function(){var me=localStorage.getItem('my_id')||''; location.href='promo.html'+(me?('?ref='+encodeURIComponent(me)):'');})()">
+          Рекламные материалы
+        </button>
+
+        <button class="btn-secondary" id="btnBackQueue" type="button"
+          onclick="(function(){var me=localStorage.getItem('my_id')||''; location.href='queue.html'+(me?('?ref='+encodeURIComponent(me)):'');})()">
+          Очередь участников
+        </button>
       </div>
 
       <div class="note" id="msg" style="margin-top:12px;"></div>
     </div>
   </div>
 
-<script>
-/* JS — БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ */
-const qs = (s) => document.querySelector(s);
-const LINES = [10,50,100];
-const KEY_ACTIVE_LINE="active_line",KEY_MY_ID="my_id",KEY_REF_OWNER="ref_owner",KEY_STATE="cabinet_state";
+  <script>
+    // 1) Поймать ошибки JS на телефоне (иначе ты просто видишь “кнопки мёртвые”)
+    window.addEventListener("error", function(e){
+      alert("JS ошибка: " + (e.message || "unknown") + "\nФайл: " + (e.filename || "") + "\nСтрока: " + (e.lineno || ""));
+    });
 
-function readState(){try{return JSON.parse(localStorage.getItem(KEY_STATE)||"{}")}catch{return{}}}
-function writeState(s){localStorage.setItem(KEY_STATE,JSON.stringify(s))}
-function ensureDefaults(){
- const s=readState(); if(!s.lines)s.lines={}
- for(const l of LINES){
-  if(!s.lines[l])s.lines[l]={status:"none",tree:{level1:[],level2:[]}}
- }
- writeState(s)
-}
-function render(){/* твоя существующая логика — оставлена */}
-ensureDefaults();
-</script>
+    const qs = (s) => document.querySelector(s);
+    const LINES = [10, 50, 100];
+
+    function getParams() {
+      const p = new URLSearchParams(location.search);
+      return {
+        ref: p.get("ref") || "",
+        line: Number(p.get("line") || 0),
+        role: p.get("role") || "",
+        debug: p.get("debug") || ""
+      };
+    }
+
+    const KEY_ACTIVE_LINE = "active_line";
+    const KEY_MY_ID = "my_id";
+    const KEY_REF_OWNER = "ref_owner";
+    const KEY_STATE = "cabinet_state";
+
+    function readState() {
+      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+      catch { return {}; }
+    }
+    function writeState(state) {
+      localStorage.setItem(KEY_STATE, JSON.stringify(state));
+    }
+
+    function ensureDefaults() {
+      const state = readState();
+      if (!state.lines) state.lines = {};
+      for (const line of LINES) {
+        const k = String(line);
+        if (!state.lines[k]) {
+          state.lines[k] = { status: "none", tree: { level1: [], level2: [] } };
+        } else {
+          if (!state.lines[k].tree) state.lines[k].tree = { level1: [], level2: [] };
+          if (!state.lines[k].status) state.lines[k].status = "none";
+        }
+      }
+      writeState(state);
+    }
+
+    function getActiveLine() {
+      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
+      return LINES.includes(saved) ? saved : 50;
+    }
+
+    function safeOn(sel, event, handler){
+      const el = qs(sel);
+      if (!el) return;
+      el.addEventListener(event, handler);
+    }
+
+    function showMsg(t) {
+      const m = qs("#msg");
+      if (m) m.textContent = t || "";
+    }
+
+    function setTabActive(line) {
+      for (const l of LINES) {
+        const btn = qs("#tab" + l);
+        if (!btn) continue;
+        btn.classList.toggle("tab-active", l === line);
+      }
+    }
+
+    function renderTree(tree) {
+      const l1 = tree?.level1 || [];
+      const l2 = tree?.level2 || [];
+      const fmt = (arr) => arr.length ? arr.map((x, i) => `${i + 1}) ${x}`).join("<br>") : "— пока пусто —";
+      return `
+        <div><b>Уровень 1:</b><br>${fmt(l1)}</div>
+        <br>
+        <div><b>Уровень 2:</b><br>${fmt(l2)}</div>
+      `;
+    }
+
+    function setStatus(line, status, opts = {}) {
+      const state = readState();
+      state.lines[String(line)].status = status;
+      writeState(state);
+      render(line, opts);
+    }
+
+    function setAction(btnId, hintId, cfg){
+      const btn = qs(btnId);
+      const hint = qs(hintId);
+      if (!btn || !hint) return;
+
+      hint.textContent = cfg.hint || "";
+      btn.disabled = !cfg.enabled;
+
+      btn.classList.toggle("soft-disabled", !cfg.enabled);
+      btn.classList.toggle("with-lock", !!cfg.lock && !cfg.enabled);
+
+      if (cfg.pulse) {
+        btn.classList.remove("pulse-once");
+        void btn.offsetWidth;
+        btn.classList.add("pulse-once");
+      } else {
+        btn.classList.remove("pulse-once");
+      }
+    }
+
+    function render(line, { pulse } = { pulse:false }) {
+      const { role } = getParams();
+      const canModerate = (role === "receiver1");
+
+      const state = readState();
+      const data = state.lines[String(line)];
+      const status = data.status;
+
+      setTabActive(line);
+
+      const lineTitle = qs("#lineTitle");
+      if (lineTitle) lineTitle.textContent = `Линия: ${line} ₴`;
+
+      const joinBox = qs("#joinBox");
+      const actionsBox = qs("#actionsBox");
+      const statusBox = qs("#statusBox");
+
+      if (actionsBox) actionsBox.style.display = "block";
+      if (joinBox) joinBox.style.display = "none";
+
+      if (status === "none") {
+        if (statusBox) statusBox.innerHTML =
+          `Статус: <b>не участвуете</b><br>` +
+          `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
+
+        if (actionsBox) actionsBox.style.display = "none";
+        if (joinBox) joinBox.style.display = "block";
+      }
+
+      if (status === "candidate_waiting") {
+        if (statusBox) statusBox.innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(255,210,90,.55);
+            box-shadow: 0 0 0 2px rgba(255,210,90,.20) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Вы — <b>кандидат</b>. Ждём подтверждения от получателя №1.
+            </div>
+          </div>`;
+
+        setAction("#btnTake3", "#hintTake3", {
+          enabled: false, lock: true,
+          hint: "Станет доступно после подтверждения помощи.",
+          pulse: false
+        });
+
+        setAction("#btnConfirm", "#hintConfirm", {
+          enabled: canModerate, lock: !canModerate,
+          hint: canModerate ? "" : "Доступно только получателю №1.",
+          pulse: false
+        });
+
+        setAction("#btnReject", "#hintReject", {
+          enabled: canModerate, lock: !canModerate,
+          hint: canModerate ? "" : "Доступно только получателю №1.",
+          pulse: false
+        });
+      }
+
+      if (status === "confirmed_can_take3") {
+        if (statusBox) statusBox.innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(120, 220, 140, .55);
+            box-shadow: 0 0 0 2px rgba(120, 220, 140, .18) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              ✅ ПОДТВЕРЖДЕНО
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Теперь можно нажать <b>«Занять 3-е место»</b>.
+            </div>
+          </div>`;
+
+        setAction("#btnTake3", "#hintTake3", { enabled: true, lock:false, hint:"", pulse: !!pulse });
+        setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Уже подтверждено.", pulse:false });
+        setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Уже подтверждено.", pulse:false });
+      }
+
+      if (status === "member") {
+        if (statusBox) statusBox.innerHTML =
+          `Статус: <b>участник</b><br>` +
+          `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
+
+        setAction("#btnTake3", "#hintTake3", { enabled:false, lock:true, hint:"Уже занято.", pulse:false });
+        setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
+        setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
+      }
+
+      const treeBox = qs("#treeBox");
+      if (treeBox) treeBox.innerHTML = renderTree(data.tree);
+
+      showMsg("");
+    }
+
+    (function init() {
+      ensureDefaults();
+
+      const { ref, line, debug } = getParams();
+
+      if (debug) alert("cabinet.js запущен (debug=1)");
+
+      if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
+
+      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
+      localStorage.setItem(KEY_MY_ID, myId);
+
+      const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
+      const whoNote = qs("#whoNote");
+      if (whoNote) {
+        whoNote.innerHTML =
+          `Ваш ID: <b>${myId}</b>` +
+          (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
+      }
+
+      const state = readState();
+      if (LINES.includes(line)) {
+        localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+        render(line, { pulse:false });
+      } else {
+        const activeFromState = LINES.find(l => state.lines[String(l)]?.status !== "none");
+        const start = activeFromState || getActiveLine();
+        localStorage.setItem(KEY_ACTIVE_LINE, String(start));
+        render(start, { pulse:false });
+      }
+
+      safeOn("#tab10","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "10"); render(10, {pulse:false}); });
+      safeOn("#tab50","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "50"); render(50, {pulse:false}); });
+      safeOn("#tab100","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "100"); render(100, {pulse:false}); });
+
+      safeOn("#btnPromo","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      safeOn("#btnBackQueue","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `queue.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      safeOn("#btnGoQueue","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      safeOn("#btnTake3","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "member");
+        showMsg("✅ Вы стали участником в этой линии (MVP).");
+      });
+
+      safeOn("#btnConfirm","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "confirmed_can_take3", { pulse:true });
+        showMsg("✅ Подтверждение сделано (MVP). Теперь доступно «Занять 3-е место».");
+      });
+
+      safeOn("#btnReject","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "none");
+        showMsg("⛔ Отклонено (MVP). Сброс участия в линии.");
+      });
+    })();
+  </script>
 </body>
 </html>
 
