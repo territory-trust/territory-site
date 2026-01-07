@@ -1,4 +1,4 @@
-<!doctype html>
+     <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
+    /* Нажатие (все кнопки) */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -16,9 +17,11 @@
       filter: brightness(.98);
     }
 
+    /* Табы линий: слегка видимее, активный — как у тебя в styles.css (.tab-active) */
     #tab10, #tab50, #tab100{ opacity: .95; }
     .tab-active{ opacity: 1 !important; }
 
+    /* КНОПКИ ДЕЙСТВИЙ: одинаковая ширина, в колонку */
     .actions{
       display:flex;
       flex-direction:column;
@@ -34,11 +37,13 @@
       margin: 6px 6px 0 10px;
     }
 
+    /* “Заблокировано, но видно” (не убиваем яркость полностью) */
     .soft-disabled{
       opacity: .72 !important;
       filter: saturate(.95) brightness(.92);
     }
 
+    /* Замочек слева */
     .with-lock{
       position: relative;
       padding-left: 44px !important;
@@ -53,6 +58,7 @@
       opacity: .9;
     }
 
+    /* Пульсация “только что стало доступно” */
     @keyframes softPulse {
       0%   { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
       50%  { box-shadow: 0 0 0 6px rgba(255,210,90,.18); filter: brightness(1.06); }
@@ -62,6 +68,7 @@
       animation: softPulse 1.1s ease-in-out 2;
     }
 
+    /* Заголовок дерева — крупнее */
     .treeTitle{
       font-weight: 900;
       font-size: 28px;
@@ -78,15 +85,20 @@
 
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
+      <!-- Переключатель линий -->
       <div style="display:flex; gap:10px; margin:16px 0;">
         <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
         <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
         <button class="btn-secondary" id="tab100" type="button">100 ₴</button>
       </div>
 
+      <!-- Блок линии -->
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
+
+      <!-- Статус -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
+      <!-- Кнопки действий (одинаковые, в колонку) -->
       <div class="actions" id="actionsBox">
         <div class="actionItem">
           <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
@@ -104,6 +116,7 @@
         </div>
       </div>
 
+      <!-- Если не участвует в линии -->
       <div id="joinBox" style="display:none; margin-top:16px;">
         <button class="btn-main" id="btnGoQueue" type="button" style="margin-top:10px;">
           Перейти в «Очередь участников»
@@ -112,6 +125,7 @@
 
       <hr style="margin:18px 0; opacity:.25;" />
 
+      <!-- Дерево приглашённых -->
       <div style="margin-top:6px;">
         <div class="treeTitle">Дерево приглашённых</div>
         <div class="note" id="treeBox" style="line-height:1.6;"></div>
@@ -120,16 +134,8 @@
       <hr style="margin:18px 0; opacity:.25;" />
 
       <div class="actions" style="margin-top:0;">
-        <!-- Fallback onclick: даже если JS упадёт, навигация будет -->
-        <button class="btn-secondary" id="btnPromo" type="button"
-          onclick="(function(){var me=localStorage.getItem('my_id')||''; location.href='promo.html'+(me?('?ref='+encodeURIComponent(me)):'');})()">
-          Рекламные материалы
-        </button>
-
-        <button class="btn-secondary" id="btnBackQueue" type="button"
-          onclick="(function(){var me=localStorage.getItem('my_id')||''; location.href='queue.html'+(me?('?ref='+encodeURIComponent(me)):'');})()">
-          Очередь участников
-        </button>
+        <button class="btn-secondary" id="btnPromo" type="button">Рекламные материалы</button>
+        <button class="btn-secondary" id="btnBackQueue" type="button">Очередь участников</button>
       </div>
 
       <div class="note" id="msg" style="margin-top:12px;"></div>
@@ -137,10 +143,11 @@
   </div>
 
   <script>
-    // 1) Поймать ошибки JS на телефоне (иначе ты просто видишь “кнопки мёртвые”)
-    window.addEventListener("error", function(e){
-      alert("JS ошибка: " + (e.message || "unknown") + "\nФайл: " + (e.filename || "") + "\nСтрока: " + (e.lineno || ""));
-    });
+    // =========================================================
+    // MVP:
+    // Состояния линии:
+    // none | candidate_waiting | confirmed_can_take3 | member
+    // =========================================================
 
     const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
@@ -150,8 +157,7 @@
       return {
         ref: p.get("ref") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || "",
-        debug: p.get("debug") || ""
+        role: p.get("role") || "" // для теста: role=receiver1
       };
     }
 
@@ -172,12 +178,14 @@
       const state = readState();
       if (!state.lines) state.lines = {};
       for (const line of LINES) {
-        const k = String(line);
-        if (!state.lines[k]) {
-          state.lines[k] = { status: "none", tree: { level1: [], level2: [] } };
+        if (!state.lines[String(line)]) {
+          state.lines[String(line)] = {
+            status: "none",
+            tree: { level1: [], level2: [] }
+          };
         } else {
-          if (!state.lines[k].tree) state.lines[k].tree = { level1: [], level2: [] };
-          if (!state.lines[k].status) state.lines[k].status = "none";
+          if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
+          if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
         }
       }
       writeState(state);
@@ -185,11 +193,18 @@
 
     function getActiveLine() {
       const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
-      return LINES.includes(saved) ? saved : 50;
+      if (LINES.includes(saved)) return saved;
+      return 50;
     }
 
-    function safeOn(sel, event, handler){
-      const el = qs(sel);
+    function setActiveLine(line) {
+      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+      render(line, { pulse: false });
+    }
+
+    // Стабильно: если кнопки нет — не падаем
+    function safeOn(id, event, handler){
+      const el = qs(id);
       if (!el) return;
       el.addEventListener(event, handler);
     }
@@ -225,19 +240,26 @@
       render(line, opts);
     }
 
+    // Управление видом кнопок (видно, но “заперто”)
     function setAction(btnId, hintId, cfg){
       const btn = qs(btnId);
       const hint = qs(hintId);
       if (!btn || !hint) return;
 
+      // текст подсказки
       hint.textContent = cfg.hint || "";
+
+      // enabled/disabled
       btn.disabled = !cfg.enabled;
 
+      // внешний вид disabled
       btn.classList.toggle("soft-disabled", !cfg.enabled);
       btn.classList.toggle("with-lock", !!cfg.lock && !cfg.enabled);
 
+      // пульсация “стало доступно”
       if (cfg.pulse) {
         btn.classList.remove("pulse-once");
+        // маленький “перезапуск”
         void btn.offsetWidth;
         btn.classList.add("pulse-once");
       } else {
@@ -262,14 +284,17 @@
       const actionsBox = qs("#actionsBox");
       const statusBox = qs("#statusBox");
 
+      // По умолчанию: показываем блок кнопок, но управляем их доступностью
       if (actionsBox) actionsBox.style.display = "block";
       if (joinBox) joinBox.style.display = "none";
 
+      // СТАТУСЫ
       if (status === "none") {
         if (statusBox) statusBox.innerHTML =
           `Статус: <b>не участвуете</b><br>` +
           `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
 
+        // В этом состоянии кнопки действий не нужны — оставим одну “Перейти…”
         if (actionsBox) actionsBox.style.display = "none";
         if (joinBox) joinBox.style.display = "block";
       }
@@ -292,20 +317,25 @@
             </div>
           </div>`;
 
+        // Кандидату: всё закрыто
+        // Получателю №1: confirm/reject открыты
         setAction("#btnTake3", "#hintTake3", {
-          enabled: false, lock: true,
+          enabled: false,
+          lock: true,
           hint: "Станет доступно после подтверждения помощи.",
           pulse: false
         });
 
         setAction("#btnConfirm", "#hintConfirm", {
-          enabled: canModerate, lock: !canModerate,
+          enabled: canModerate,
+          lock: !canModerate,
           hint: canModerate ? "" : "Доступно только получателю №1.",
           pulse: false
         });
 
         setAction("#btnReject", "#hintReject", {
-          enabled: canModerate, lock: !canModerate,
+          enabled: canModerate,
+          lock: !canModerate,
           hint: canModerate ? "" : "Доступно только получателю №1.",
           pulse: false
         });
@@ -329,9 +359,26 @@
             </div>
           </div>`;
 
-        setAction("#btnTake3", "#hintTake3", { enabled: true, lock:false, hint:"", pulse: !!pulse });
-        setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Уже подтверждено.", pulse:false });
-        setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Уже подтверждено.", pulse:false });
+        setAction("#btnTake3", "#hintTake3", {
+          enabled: true,
+          lock: false,
+          hint: "",
+          pulse: !!pulse
+        });
+
+        setAction("#btnConfirm", "#hintConfirm", {
+          enabled: false,
+          lock: true,
+          hint: "Уже подтверждено.",
+          pulse: false
+        });
+
+        setAction("#btnReject", "#hintReject", {
+          enabled: false,
+          lock: true,
+          hint: "Уже подтверждено.",
+          pulse: false
+        });
       }
 
       if (status === "member") {
@@ -339,6 +386,7 @@
           `Статус: <b>участник</b><br>` +
           `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
 
+        // Всё закрыто
         setAction("#btnTake3", "#hintTake3", { enabled:false, lock:true, hint:"Уже занято.", pulse:false });
         setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
         setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
@@ -353,9 +401,7 @@
     (function init() {
       ensureDefaults();
 
-      const { ref, line, debug } = getParams();
-
-      if (debug) alert("cabinet.js запущен (debug=1)");
+      const { ref, line } = getParams();
 
       if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
@@ -370,6 +416,7 @@
           (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
       }
 
+      // активная линия: URL → или первая где участвует → или сохранённая/дефолт
       const state = readState();
       if (LINES.includes(line)) {
         localStorage.setItem(KEY_ACTIVE_LINE, String(line));
@@ -381,9 +428,9 @@
         render(start, { pulse:false });
       }
 
-      safeOn("#tab10","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "10"); render(10, {pulse:false}); });
-      safeOn("#tab50","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "50"); render(50, {pulse:false}); });
-      safeOn("#tab100","click", () => { localStorage.setItem(KEY_ACTIVE_LINE, "100"); render(100, {pulse:false}); });
+      safeOn("#tab10","click", () => setActiveLine(10));
+      safeOn("#tab50","click", () => setActiveLine(50));
+      safeOn("#tab100","click", () => setActiveLine(100));
 
       safeOn("#btnPromo","click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
@@ -401,6 +448,7 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
+      // действия (MVP)
       safeOn("#btnTake3","click", () => {
         const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
         setStatus(l, "member");
@@ -409,6 +457,7 @@
 
       safeOn("#btnConfirm","click", () => {
         const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        // после подтверждения — пульсация доступной кнопки “Занять 3-е место”
         setStatus(l, "confirmed_can_take3", { pulse:true });
         showMsg("✅ Подтверждение сделано (MVP). Теперь доступно «Занять 3-е место».");
       });
@@ -422,4 +471,3 @@
   </script>
 </body>
 </html>
-
