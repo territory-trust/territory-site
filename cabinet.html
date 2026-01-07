@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
+    /* Нажатие (все кнопки) */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -16,22 +17,23 @@
       filter: brightness(.98);
     }
 
-    #tab10, #tab50, #tab100{ opacity:.95 }
-    .tab-active{ opacity:1!important }
+    /* Табы линий */
+    #tab10, #tab50, #tab100{ opacity: .95; }
+    .tab-active{ opacity: 1 !important; }
 
-    /* ===== БЛОК ЯРЛЫКА (ТОЛЬКО СТРОКА) ===== */
+    /* ===== ЯРЛЫК: ТОЛЬКО ОДНА СТРОКА ===== */
     .shortcutLine{
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      font-size:15px;
-      line-height:1.5;
-      opacity:.92;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size: 15px;
+      line-height: 1.5;
+      opacity: .92;
     }
 
-    /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
+    /* ===== КНОПКИ ДЕЙСТВИЙ: одинаковые, слева, НЕ на всю ширину ===== */
     .actions{
       display:flex;
       flex-direction:column;
@@ -39,157 +41,460 @@
       margin-top:14px;
       align-items:flex-start;
     }
-    .actionItem{ width:100% }
-
-    .actions .btn-main{
-      width:260px;
-      max-width:90%;
-    }
-
+    .actionItem{ display:block; width:100%; }
     .actionHint{
-      font-size:14px;
-      line-height:1.35;
-      opacity:.82;
-      margin:6px 0 0 10px;
+      font-size: 14px;
+      line-height: 1.35;
+      opacity: .82;
+      margin: 6px 6px 0 10px;
+      max-width: 520px;
+    }
+    .actions .btn-main{
+      width: 240px;
+      max-width: 92%;
+      min-height: 54px;
+      text-align: left;
+      padding-left: 16px;
+      padding-right: 16px;
+      box-sizing: border-box;
     }
 
+    /* “Заблокировано, но видно” */
     .soft-disabled{
-      opacity:.72!important;
-      filter:saturate(.95) brightness(.92);
+      opacity: .72 !important;
+      filter: saturate(.95) brightness(.92);
     }
 
+    /* Замочек слева */
     .with-lock{
-      position:relative;
-      padding-left:44px!important;
+      position: relative;
+      padding-left: 44px !important;
     }
     .with-lock::before{
-      content:"🔒";
+      content: "🔒";
       position:absolute;
-      left:16px;
-      top:50%;
-      transform:translateY(-50%);
-      font-size:18px;
-      opacity:.9;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      opacity: .9;
     }
 
+    /* Пульсация “стало доступно” */
+    @keyframes softPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
+      50%  { box-shadow: 0 0 0 6px rgba(255,210,90,.18); filter: brightness(1.06); }
+      100% { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
+    }
+    .pulse-once{ animation: softPulse 1.1s ease-in-out 2; }
+
+    /* Заголовок приглашённых */
     .treeTitle{
-      font-weight:900;
-      font-size:20px;
-      margin:18px 0 10px;
-      white-space:nowrap;
+      font-weight: 900;
+      font-size: clamp(18px, 5.2vw, 22px);
+      margin: 18px 0 10px;
+      letter-spacing: .2px;
+      white-space: nowrap;
     }
 
-    /* ↓ УМЕНЬШЕННАЯ КНОПКА ОЧЕРЕДИ (НЕ БОЧОНОК) */
+    /* ↓ КНОПКА “ПЕРЕЙТИ В ОЧЕРЕДЬ” — УЗКАЯ И ТОНКАЯ */
     #btnGoQueue{
-      width:220px;
-      max-width:85%;
-      font-size:14px;
-      padding:10px 14px;
+      width: 220px;
+      max-width: 88%;
+      min-height: 44px;
+      padding: 10px 14px;
+      font-size: 14px;
+      text-align: left;
+      box-sizing: border-box;
     }
   </style>
 </head>
 
 <body>
-<div class="wrap">
-<div class="card">
-<h1 style="margin-top:0;">Личный кабинет</h1>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">Личный кабинет</h1>
 
-<div class="note" id="whoNote"></div>
+      <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
-<div class="shortcutLine">
-📌 Ярлык на рабочий стол: меню браузера (⋮) → «Добавить на главный экран».
-</div>
+      <div class="shortcutLine">
+        📌 Ярлык на рабочий стол: меню браузера (⋮) → «Добавить на главный экран».
+      </div>
 
-<div style="display:flex; gap:10px; margin:16px 0;">
-  <button class="btn-secondary" id="tab10">10 ₴</button>
-  <button class="btn-secondary" id="tab50">50 ₴</button>
-  <button class="btn-secondary" id="tab100">100 ₴</button>
-</div>
+      <!-- Переключатель линий -->
+      <div style="display:flex; gap:10px; margin:16px 0;">
+        <button class="btn-secondary" id="tab10" type="button">10 ₴</button>
+        <button class="btn-secondary" id="tab50" type="button">50 ₴</button>
+        <button class="btn-secondary" id="tab100" type="button">100 ₴</button>
+      </div>
 
-<div class="note" id="lineTitle"></div>
-<div class="note" id="statusBox"></div>
+      <!-- Блок линии -->
+      <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
 
-<div class="actions" id="actionsBox">
-  <div class="actionItem">
-    <button class="btn-main" id="btnTake3" disabled>Занять 3-е место</button>
-    <div class="actionHint" id="hintTake3"></div>
+      <!-- Статус -->
+      <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
+
+      <!-- Кнопки действий -->
+      <div class="actions" id="actionsBox">
+        <div class="actionItem">
+          <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
+          <div class="actionHint" id="hintTake3"></div>
+        </div>
+
+        <div class="actionItem">
+          <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
+          <div class="actionHint" id="hintConfirm"></div>
+        </div>
+
+        <div class="actionItem">
+          <button class="btn-main" id="btnReject" type="button" disabled>Отклонить</button>
+          <div class="actionHint" id="hintReject"></div>
+        </div>
+      </div>
+
+      <!-- Если не участвует в линии -->
+      <div id="joinBox" style="display:none; margin-top:16px;">
+        <button class="btn-main" id="btnGoQueue" type="button">
+          Перейти в «Очередь участников»
+        </button>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+
+      <!-- Ваши приглашённые -->
+      <div style="margin-top:6px;">
+        <div class="treeTitle">Ваши приглашённые</div>
+        <div class="note" id="treeBox" style="line-height:1.6;"></div>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+
+      <div class="actions" style="margin-top:0;">
+        <button class="btn-secondary" id="btnPromo" type="button">Рекламные материалы</button>
+        <button class="btn-secondary" id="btnBackQueue" type="button">Очередь участников</button>
+      </div>
+
+      <div class="note" id="msg" style="margin-top:12px;"></div>
+    </div>
   </div>
-  <div class="actionItem">
-    <button class="btn-main" id="btnConfirm" disabled>Подтвердить помощь</button>
-    <div class="actionHint" id="hintConfirm"></div>
-  </div>
-  <div class="actionItem">
-    <button class="btn-main" id="btnReject" disabled>Отклонить</button>
-    <div class="actionHint" id="hintReject"></div>
-  </div>
-</div>
 
-<div id="joinBox" style="display:none;margin-top:16px;">
-  <button class="btn-main" id="btnGoQueue">
-    Перейти в «Очередь участников»
-  </button>
-</div>
+  <script>
+    // =========================================================
+    // MVP:
+    // Состояния линии:
+    // none | candidate_waiting | confirmed_can_take3 | member
+    // =========================================================
 
-<hr style="margin:18px 0;opacity:.25">
+    const qs = (s) => document.querySelector(s);
+    const LINES = [10, 50, 100];
 
-<div>
-  <div class="treeTitle">Ваши приглашённые</div>
-  <div class="note" id="treeBox"></div>
-</div>
+    function getParams() {
+      const p = new URLSearchParams(location.search);
+      return {
+        ref: p.get("ref") || "",        // в текущем MVP сюда прилетает MY_ID из warning.html
+        owner: p.get("owner") || "",    // если позже будем передавать владельца явно
+        line: Number(p.get("line") || 0),
+        role: p.get("role") || ""       // для теста: role=receiver1
+      };
+    }
 
-<hr style="margin:18px 0;opacity:.25">
+    const KEY_ACTIVE_LINE = "active_line";
+    const KEY_MY_ID = "my_id";
+    const KEY_REF_OWNER = "ref_owner";
+    const KEY_STATE = "cabinet_state";
 
-<div class="actions">
-  <button class="btn-secondary" id="btnPromo">Рекламные материалы</button>
-  <button class="btn-secondary" id="btnBackQueue">Очередь участников</button>
-</div>
+    function readState() {
+      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
+      catch { return {}; }
+    }
+    function writeState(state) {
+      localStorage.setItem(KEY_STATE, JSON.stringify(state));
+    }
 
-<div class="note" id="msg"></div>
-</div>
-</div>
+    function ensureDefaults() {
+      const state = readState();
+      if (!state.lines) state.lines = {};
+      for (const line of LINES) {
+        if (!state.lines[String(line)]) {
+          state.lines[String(line)] = { status: "none", tree: { level1: [], level2: [] } };
+        } else {
+          if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
+          if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
+        }
+      }
+      writeState(state);
+    }
 
-<script>
-const qs=s=>document.querySelector(s);
-const LINES=[10,50,100];
-const KEY_ACTIVE_LINE="active_line";
-const KEY_MY_ID="my_id";
-const KEY_STATE="cabinet_state";
+    function getActiveLine() {
+      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
+      if (LINES.includes(saved)) return saved;
+      return 50;
+    }
 
-function readState(){
-  try{return JSON.parse(localStorage.getItem(KEY_STATE)||"{}")}catch{return{}}
-}
-function writeState(s){localStorage.setItem(KEY_STATE,JSON.stringify(s))}
+    function setActiveLine(line) {
+      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+      render(line, { pulse: false });
+    }
 
-function ensureDefaults(){
-  const s=readState(); if(!s.lines)s.lines={}
-  LINES.forEach(l=>{
-    if(!s.lines[l])s.lines[l]={status:"none",tree:{level1:[],level2:[]}}
-  })
-  writeState(s)
-}
+    function safeOn(id, event, handler){
+      const el = qs(id);
+      if (!el) return;
+      el.addEventListener(event, handler);
+    }
 
-function renderTree(t){
-  const l1=t.level1.length,l2=t.level2.length
-  return `
-<b>Уровень 1:</b> ${l1} участников — Вы у них на 2 месте<br><br>
-<b>Уровень 2:</b> ${l2} участников — Вы у них на 1 месте<br><br>
-<b>Уровень 3:</b> - Отправляет помощь Вам
-`
-}
+    function showMsg(t) {
+      const m = qs("#msg");
+      if (m) m.textContent = t || "";
+    }
 
-function render(line){
-  const s=readState().lines[line]
-  qs("#treeBox").innerHTML=renderTree(s.tree)
-}
+    function setTabActive(line) {
+      for (const l of LINES) {
+        const btn = qs("#tab" + l);
+        if (!btn) continue;
+        btn.classList.toggle("tab-active", l === line);
+      }
+    }
 
-(function init(){
-  ensureDefaults()
-  const my=localStorage.getItem(KEY_MY_ID)||"TEST123"
-  localStorage.setItem(KEY_MY_ID,my)
-  qs("#whoNote").innerHTML=`Ваш ID: <b>${my}</b>`
-  render(50)
-})();
-</script>
+    // Статистика по локальному дереву (пока без БД)
+    function renderInviteStats(tree) {
+      const l1 = tree?.level1 || [];
+      const l2 = tree?.level2 || [];
+      const n1 = l1.length;
+      const n2 = l2.length;
+
+      return `
+        <div><b>Уровень 1:</b> ${n1} участников — Вы у них на 2 месте</div>
+        <div style="margin-top:8px;"><b>Уровень 2:</b> ${n2} участников — Вы у них на 1 месте</div>
+        <div style="margin-top:8px;"><b>Уровень 3:</b> - Отправляет помощь Вам</div>
+      `;
+    }
+
+    function setStatus(line, status, opts = {}) {
+      const state = readState();
+      state.lines[String(line)].status = status;
+      writeState(state);
+      render(line, opts);
+    }
+
+    function setAction(btnId, hintId, cfg){
+      const btn = qs(btnId);
+      const hint = qs(hintId);
+      if (!btn || !hint) return;
+
+      hint.textContent = cfg.hint || "";
+      btn.disabled = !cfg.enabled;
+
+      btn.classList.toggle("soft-disabled", !cfg.enabled);
+      btn.classList.toggle("with-lock", !!cfg.lock && !cfg.enabled);
+
+      if (cfg.pulse) {
+        btn.classList.remove("pulse-once");
+        void btn.offsetWidth;
+        btn.classList.add("pulse-once");
+      } else {
+        btn.classList.remove("pulse-once");
+      }
+    }
+
+    function render(line, { pulse } = { pulse:false }) {
+      const { role } = getParams();
+      const canModerate = (role === "receiver1");
+
+      const state = readState();
+      const data = state.lines[String(line)];
+      const status = data.status;
+
+      setTabActive(line);
+
+      const lineTitle = qs("#lineTitle");
+      if (lineTitle) lineTitle.textContent = `Линия: ${line} ₴`;
+
+      const joinBox = qs("#joinBox");
+      const actionsBox = qs("#actionsBox");
+      const statusBox = qs("#statusBox");
+
+      if (actionsBox) actionsBox.style.display = "block";
+      if (joinBox) joinBox.style.display = "none";
+
+      if (status === "none") {
+        if (statusBox) statusBox.innerHTML =
+          `Статус: <b>не участвуете</b><br>` +
+          `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
+
+        if (actionsBox) actionsBox.style.display = "none";
+        if (joinBox) joinBox.style.display = "block";
+      }
+
+      if (status === "candidate_waiting") {
+        if (statusBox) statusBox.innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(255,210,90,.55);
+            box-shadow: 0 0 0 2px rgba(255,210,90,.20) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Вы — <b>кандидат</b>. Ждём подтверждения от получателя №1.
+            </div>
+          </div>`;
+
+        setAction("#btnTake3", "#hintTake3", {
+          enabled: false, lock: true,
+          hint: "Станет доступно после подтверждения помощи.",
+          pulse: false
+        });
+
+        setAction("#btnConfirm", "#hintConfirm", {
+          enabled: canModerate,
+          lock: !canModerate,
+          hint: canModerate ? "" : "Доступно только получателю №1.",
+          pulse: false
+        });
+
+        setAction("#btnReject", "#hintReject", {
+          enabled: canModerate,
+          lock: !canModerate,
+          hint: canModerate ? "" : "Доступно только получателю №1.",
+          pulse: false
+        });
+      }
+
+      if (status === "confirmed_can_take3") {
+        if (statusBox) statusBox.innerHTML =
+          `<div style="
+            margin-top:10px;
+            padding:14px 14px;
+            border-radius:14px;
+            border:1px solid rgba(120, 220, 140, .55);
+            box-shadow: 0 0 0 2px rgba(120, 220, 140, .18) inset;
+            text-align:center;
+          ">
+            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
+              ✅ ПОДТВЕРЖДЕНО
+            </div>
+            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
+              Теперь можно нажать <b>«Занять 3-е место»</b>.
+            </div>
+          </div>`;
+
+        setAction("#btnTake3", "#hintTake3", {
+          enabled: true, lock: false,
+          hint: "",
+          pulse: !!pulse
+        });
+
+        setAction("#btnConfirm", "#hintConfirm", {
+          enabled: false, lock: true,
+          hint: "Уже подтверждено.",
+          pulse: false
+        });
+
+        setAction("#btnReject", "#hintReject", {
+          enabled: false, lock: true,
+          hint: "Уже подтверждено.",
+          pulse: false
+        });
+      }
+
+      if (status === "member") {
+        if (statusBox) statusBox.innerHTML =
+          `Статус: <b>участник</b><br>` +
+          `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
+
+        setAction("#btnTake3", "#hintTake3", { enabled:false, lock:true, hint:"Уже занято.", pulse:false });
+        setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
+        setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
+      }
+
+      const treeBox = qs("#treeBox");
+      if (treeBox) treeBox.innerHTML = renderInviteStats(data.tree);
+
+      showMsg("");
+    }
+
+    (function init() {
+      ensureDefaults();
+
+      const { ref, owner, line } = getParams();
+
+      // ВАЖНО: ref в кабинете сейчас = my_id (из warning.html), поэтому НЕ пишем его в ref_owner.
+      // Если передали owner=... (в будущем) — тогда фиксируем.
+      if (owner) localStorage.setItem(KEY_REF_OWNER, owner);
+
+      // Мой ID
+      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
+      localStorage.setItem(KEY_MY_ID, myId);
+
+      // ref_owner: если вдруг равен моему ID — очищаем, чтобы не было "сам себя пригласил"
+      const refOwnerRaw = localStorage.getItem(KEY_REF_OWNER) || "";
+      const refOwner = (refOwnerRaw && refOwnerRaw === myId) ? "" : refOwnerRaw;
+      if (refOwnerRaw && refOwnerRaw === myId) localStorage.removeItem(KEY_REF_OWNER);
+
+      const whoNote = qs("#whoNote");
+      if (whoNote) {
+        whoNote.innerHTML =
+          `Ваш ID: <b>${myId}</b>` +
+          (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
+      }
+
+      // активная линия: URL → или первая где участвует → или сохранённая/дефолт
+      const state = readState();
+      if (LINES.includes(line)) {
+        localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+        render(line, { pulse:false });
+      } else {
+        const activeFromState = LINES.find(l => state.lines[String(l)]?.status !== "none");
+        const start = activeFromState || getActiveLine();
+        localStorage.setItem(KEY_ACTIVE_LINE, String(start));
+        render(start, { pulse:false });
+      }
+
+      safeOn("#tab10","click", () => setActiveLine(10));
+      safeOn("#tab50","click", () => setActiveLine(50));
+      safeOn("#tab100","click", () => setActiveLine(100));
+
+      safeOn("#btnPromo","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `promo.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      safeOn("#btnBackQueue","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        location.href = `queue.html${me ? `?ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      safeOn("#btnGoQueue","click", () => {
+        const me = localStorage.getItem(KEY_MY_ID) || "";
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
+      });
+
+      // действия (MVP)
+      safeOn("#btnTake3","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "member");
+        showMsg("✅ Вы стали участником в этой линии (MVP).");
+      });
+
+      safeOn("#btnConfirm","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "confirmed_can_take3", { pulse:true });
+        showMsg("✅ Подтверждение сделано (MVP). Теперь доступно «Занять 3-е место».");
+      });
+
+      safeOn("#btnReject","click", () => {
+        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
+        setStatus(l, "none");
+        showMsg("⛔ Отклонено (MVP). Сброс участия в линии.");
+      });
+    })();
+  </script>
 </body>
 </html>
+
 
