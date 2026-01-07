@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Reset</title>
+</head>
+<body>
+<script>
+  // ЖЁСТКАЯ ПОЛНАЯ ОЧИСТКА
+  localStorage.removeItem("cabinet_state");
+  localStorage.removeItem("active_line");
+  localStorage.removeItem("ref_owner");
+
+  // если вдруг где-то ещё
+  Object.keys(localStorage).forEach(k => {
+    if (k.includes("cabinet")) localStorage.removeItem(k);
+  });
+
+  // контроль
+  console.log("RESET DONE", localStorage);
+
+  // редирект в кабинет
+  location.href = "cabinet.html?reset=1";
+</script>
+</body>
+</html>
