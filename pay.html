@@ -1,10 +1,148 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Оплата — Территория доверия и поддержки</title>
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Локальные правки только для pay.html -->
+  <style>
+    /* Чуть плотнее и ровнее сетка для мобилки */
+    .wrap.pay .card { padding-bottom: 18px; }
+    .wrap.pay .sub { margin-top: 6px; opacity: .92; line-height: 1.35; }
+    .wrap.pay .box { margin-top: 12px; }
+
+    /* Заголовок и метки */
+    .wrap.pay h1 { margin-bottom: 10px; }
+    .pill { display:inline-flex; align-items:center; justify-content:center; min-width: 48px; }
+
+    /* Получатель / карта: делаем аккуратный блок */
+    .topRow { display:flex; gap:14px; align-items:stretch; flex-wrap: wrap; }
+    .kv { flex: 1 1 220px; }
+    .kv .k { opacity:.78; font-size: 14px; margin-bottom: 6px; }
+    .kv .v { font-weight: 800; font-size: 18px; }
+
+    /* Номер карты: моноширинный и удобный */
+    .cardTop .v#toCard{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      letter-spacing: .6px;
+      font-weight: 900;
+      font-size: 18px;
+      opacity: .98;
+      white-space: nowrap;
+    }
+
+    .card-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    /* COPY кнопка — маленькая, но стильная, не выбивается */
+    .copy-mini{
+      border: 1px solid rgba(255,210,90,.45);
+      background: rgba(10, 80, 150, .25);
+      color: rgba(255,210,90,.95);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      letter-spacing: .3px;
+      min-width: 92px;
+      text-align:center;
+      box-shadow: 0 0 0 2px rgba(255,210,90,.12) inset;
+    }
+    .copy-mini:active{ transform: translateY(1px) scale(.99); filter: brightness(.98); }
+    .copy-mini .ico{ margin-right: 6px; }
+
+    .copy-msg{
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: .8;
+      min-height: 16px;
+    }
+
+    /* Инструкция: чуть читабельнее */
+    .noteTitle{ font-weight: 900; margin-bottom: 8px; font-size: 16px; }
+    .steps{ margin: 0; padding-left: 18px; }
+    .steps li{ margin: 8px 0; line-height: 1.45; }
+
+    /* Прикрепить квитанцию: имя файла как бейдж */
+    .file-name{
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      font-weight: 700;
+      opacity: .95;
+    }
+    .file-name:empty{ display:none; }
+    .file-name::before{
+      content: "📄";
+      opacity: .9;
+    }
+
+    /* Уведомления: делаем карточкой */
+    .checkRow{
+      display:flex;
+      align-items:flex-start;
+      gap: 12px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+    }
+    #notifyChk{
+      width: 22px;
+      height: 22px;
+      margin-top: 2px;
+      accent-color: #ffd25a;
+    }
+    .checkRow.attention{
+      border-color: rgba(255,210,90,.55);
+      box-shadow: 0 0 0 2px rgba(255,210,90,.18) inset;
+      animation: payPulse 1.2s ease-in-out 2;
+    }
+    @keyframes payPulse{
+      0%{ filter: brightness(1); transform: translateY(0); }
+      50%{ filter: brightness(1.08); transform: translateY(-1px); }
+      100%{ filter: brightness(1); transform: translateY(0); }
+    }
+
+    /* Нижние кнопки: одинаковые, в ряд */
+    .actionsRow{
+      display:flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .actionsRow button{
+      flex: 1 1 0;
+      min-height: 54px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+
+    /* Убираем “тусклость” заблокированной Далее (но она всё равно disabled) */
+    #sentBtn[disabled]{
+      opacity: .78;
+      filter: grayscale(.12);
+    }
+
+    /* Лёгкая анимация нажатия */
+    button, .btn-main, .btn-secondary{
+      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active, .btn-main:active, .btn-secondary:active{
+      transform: translateY(1px) scale(.99);
+      filter: brightness(.98);
+    }
+  </style>
 </head>
 
 <body>
@@ -30,7 +168,9 @@
 
             <div class="card-row">
               <div class="v" id="toCard">—</div>
-              <button id="copyCardBtn" type="button" class="copy-mini" title="Скопировать номер карты">COPY</button>
+              <button id="copyCardBtn" type="button" class="copy-mini" title="Скопировать номер карты">
+                <span class="ico">📋</span> COPY
+              </button>
             </div>
 
             <div class="copy-msg" id="copyMsg"></div>
@@ -77,8 +217,10 @@
       </div>
 
       <!-- Действия -->
-      <button class="btn-main" id="sentBtn" disabled>Далее</button>
-      <button class="btn-secondary" id="backBtn" type="button">Назад</button>
+      <div class="actionsRow">
+        <button class="btn-main" id="sentBtn" disabled>Далее</button>
+        <button class="btn-secondary" id="backBtn" type="button">Назад</button>
+      </div>
 
       <div class="note" id="resultMsg" style="margin-top:10px;"></div>
     </div>
@@ -188,11 +330,11 @@
         const text = (toCard.textContent || "").replace(/\s+/g, " ").trim();
         try {
           await navigator.clipboard.writeText(text);
-          const old = copyBtn.textContent;
-          copyBtn.textContent = "OK";
+          const old = copyBtn.innerHTML;
+          copyBtn.innerHTML = "✅ OK";
           if (copyMsg) copyMsg.textContent = "Скопировано";
           setTimeout(() => {
-            copyBtn.textContent = old;
+            copyBtn.innerHTML = old;
             if (copyMsg) copyMsg.textContent = "";
           }, 900);
         } catch {
@@ -210,26 +352,14 @@
 
     function refreshBtn() {
       const ok = hasFile() && notify.checked;
-
       sentBtn.disabled = !ok;
-      sentBtn.classList.toggle("active", ok);
-
-      // чуть “логика-UX”: если файл есть, но уведомления нет — подсказка
-      if (hasFile() && !notify.checked) {
-        sentBtn.classList.add("ready");
-      } else {
-        sentBtn.classList.remove("ready");
-      }
     }
 
-    // старт
-    sentBtn.classList.add("waiting");
     refreshBtn();
 
     receipt.addEventListener("change", () => {
       const f = receipt.files && receipt.files[0] ? receipt.files[0].name : "";
       if (fileName) fileName.textContent = f ? f : "";
-      sentBtn.classList.remove("waiting");
       refreshBtn();
     });
 
@@ -245,7 +375,6 @@
     sentBtn.addEventListener("click", (e) => {
       e.preventDefault();
 
-      // если уведомления не включены — подсветим и не пускаем
       if (!notify.checked) {
         if (notifyRow) {
           notifyRow.classList.add("attention");
@@ -255,15 +384,12 @@
         return;
       }
 
-      // если файл не выбран — не пускаем (на всякий)
       if (!hasFile()) return;
 
-      // На всякий случай фиксируем статус линии (если вдруг кто-то перескочил регистрацию)
       let state = ensureDefaults(readState());
       state.lines[line].status = "candidate_waiting";
       writeState(state);
 
-      // Дальше — твоя переходная страница предупреждения
       location.href = `warning.html?line=${encodeURIComponent(line)}`;
     });
   });
