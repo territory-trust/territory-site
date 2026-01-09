@@ -274,21 +274,31 @@
       location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(currentLine)}`;
     });
 
-    // Правила
-    rulesBtn.addEventListener("click", () => {
-      alert(
-        "Правила (MVP):\n" +
-        "1) Для каждой линии (10/50/100) регистрация отдельная.\n" +
-        "2) Можно использовать разные ник и карту в разных линиях.\n" +
-        "3) После регистрации в линии вы становитесь кандидатом и ждёте подтверждения.\n" +
-        "4) Квитанции и база будут подключены позже."
-      );
-    });
+    // Правила (переход на отдельную страницу rules.html)
+rulesBtn.addEventListener("click", () => {
+  const p = new URLSearchParams(location.search);
+
+  const ref =
+    p.get("ref") ||
+    localStorage.getItem("my_id") ||
+    "TEST123";
+
+  const line =
+    p.get("line") ||
+    localStorage.getItem("active_line") ||
+    currentLine ||
+    "10";
+
+  location.href =
+    `rules.html?ref=${encodeURIComponent(ref)}&line=${encodeURIComponent(line)}`;
+});
+
 
   });
   </script>
 </body>
 </html>
+
 
 
 
