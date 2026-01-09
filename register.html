@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Регистрация — Территория доверия и поддержки</title>
+  <title>Регистрация — Территория доверия</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -19,192 +22,78 @@
 
       <div class="box">
         <label>Цель (коротко)</label>
-        <input id="goal" placeholder="Например: лекарства, учеба, ремонт" maxlength="80" />
+        <input id="goal" placeholder="Например: лекарства, ремонт" maxlength="80" />
       </div>
 
       <div class="box">
         <label>Номер карты</label>
-        <input
-          id="card"
-          type="text"
-          inputmode="numeric"
-          autocomplete="cc-number"
-          placeholder="0000 0000 0000 0000"
-          maxlength="19"
-        />
+        <input id="card" type="text" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19" />
       </div>
 
       <button class="btn-main" id="nextBtn" disabled>Далее → к оплате</button>
       <button class="btn-secondary" id="backBtn" type="button">Назад</button>
-
       <div class="msg" id="msg"></div>
     </div>
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // ===== ключи (как в cabinet.html / queue.html) =====
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Ждем анонимную авторизацию
+    let uid;
+    try { uid = await ensureAnonAuth(); } catch(e) { console.error(e); }
+
     const KEY_STATE = "cabinet_state";
     const KEY_ACTIVE_LINE = "active_line";
     const KEY_MY_ID = "my_id";
     const KEY_REF_OWNER = "ref_owner";
 
-    const LINES = [10, 50, 100];
-
-    // ===== DOM =====
     const nick = document.getElementById("nick");
     const goal = document.getElementById("goal");
     const card = document.getElementById("card");
     const nextBtn = document.getElementById("nextBtn");
-    const backBtn = document.getElementById("backBtn");
     const lineLabel = document.getElementById("lineLabel");
     const msg = document.getElementById("msg");
 
-    // если вдруг что-то не нашлось — не ломаем страницу
-    if (!nick || !goal || !card || !nextBtn || !backBtn || !lineLabel || !msg) return;
-
-    function showMsg(t) { msg.textContent = t || ""; }
-
-    function getParams() {
-      const p = new URLSearchParams(location.search);
-      return {
-        line: Number(p.get("line") || 0),
-        ref: p.get("ref") || "" // пригласивший (ref_owner)
-      };
-    }
-
-    function readState() {
-      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
-      catch { return {}; }
-    }
-    function writeState(state) {
-      localStorage.setItem(KEY_STATE, JSON.stringify(state));
-    }
-
-    function ensureDefaults(state) {
-      if (!state.lines) state.lines = {};
-      for (const l of LINES) {
-        const key = String(l);
-        if (!state.lines[key]) {
-          state.lines[key] = {
-            status: "none",
-            profile: null, // {nick, goal, card}
-            tree: { level1: [], level2: [] }
-          };
-        } else {
-          // мягкая миграция старых сохранений
-          if (!("status" in state.lines[key])) state.lines[key].status = "none";
-          if (!("profile" in state.lines[key])) state.lines[key].profile = null;
-          if (!state.lines[key].tree) state.lines[key].tree = { level1: [], level2: [] };
-        }
-      }
-      return state;
-    }
-
-    // line: URL -> localStorage -> 10
-    function resolveLine() {
-      const { line } = getParams();
-      if (LINES.includes(line)) return line;
-
-      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
-      if (LINES.includes(saved)) return saved;
-
-      return 10;
-    }
-
-    // ===== форматирование карты =====
-    function formatCard(value) {
-      const digits = value.replace(/\D/g, "").slice(0, 16);
-      return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+    function formatCard(v) {
+      const d = v.replace(/\D/g, "").slice(0, 16);
+      return d.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
     }
 
     function checkForm() {
-      const nickOk = nick.value.trim().length > 0;
-      const goalOk = goal.value.trim().length > 0;
-
-      const digits = card.value.replace(/\D/g, "");
-      const cardOk = digits.length === 16;
-
-      const ok = nickOk && goalOk && cardOk;
-
+      const ok = nick.value.trim() && goal.value.trim() && card.value.replace(/\D/g, "").length === 16;
       nextBtn.disabled = !ok;
-      nextBtn.classList.toggle("is-active", ok);
     }
 
-    // ===== init =====
-    const line = resolveLine();
-    localStorage.setItem(KEY_ACTIVE_LINE, String(line));
+    // Инициализация линии
+    const p = new URLSearchParams(location.search);
+    const line = Number(p.get("line")) || Number(localStorage.getItem(KEY_ACTIVE_LINE)) || 10;
     lineLabel.textContent = `${line} ₴`;
-
-    // ref_owner: если пришли по ref — сохраняем
-    const { ref } = getParams();
+    
+    const ref = p.get("ref");
     if (ref) localStorage.setItem(KEY_REF_OWNER, ref);
 
-    // my_id: MVP-заглушка (позже заменим на реальный генератор)
-    if (!localStorage.getItem(KEY_MY_ID)) {
-      localStorage.setItem(KEY_MY_ID, "TEST123");
-    }
-
-    // подставим профиль, если он уже есть в этой линии
-    let state = ensureDefaults(readState());
-    const existingProfile = state.lines[String(line)]?.profile;
-
-    if (existingProfile) {
-      nick.value = existingProfile.nick || "";
-      goal.value = existingProfile.goal || "";
-      if (existingProfile.card) card.value = formatCard(existingProfile.card);
-    }
-
-    // ===== handlers =====
-    backBtn.addEventListener("click", () => history.back());
-
-    card.addEventListener("input", () => {
-      const before = card.value;
-      const beforePos = card.selectionStart ?? card.value.length;
-
-      card.value = formatCard(card.value);
-
-      // аккуратно двигаем курсор
-      const diff = card.value.length - before.length;
-      const newPos = Math.max(0, beforePos + diff);
-      card.setSelectionRange(newPos, newPos);
-
-      checkForm();
-    });
-
+    card.addEventListener("input", () => { card.value = formatCard(card.value); checkForm(); });
     nick.addEventListener("input", checkForm);
     goal.addEventListener("input", checkForm);
 
-    nextBtn.addEventListener("click", () => {
-      showMsg("");
+    nextBtn.addEventListener("click", async () => {
+      msg.textContent = "Сохранение...";
+      const myRefCode = localStorage.getItem(KEY_MY_ID) || Math.random().toString(36).substring(2, 9).toUpperCase();
+      localStorage.setItem(KEY_MY_ID, myRefCode);
 
-      const n = nick.value.trim();
-      const g = goal.value.trim();
-      const digits = card.value.replace(/\D/g, "");
+      try {
+        // Запись в базу
+        await window.sb.from('users').upsert({ id: uid, ref_code: myRefCode, inviter_code: localStorage.getItem(KEY_REF_OWNER) });
+        await window.sb.from('profiles').upsert({ 
+            user_id: uid, line: line, nick: nick.value, goal: goal.value, 
+            full_card: card.value.replace(/\D/g, ""), status: 'candidate_waiting' 
+        });
 
-      if (!n || !g || digits.length !== 16) {
-        showMsg("Проверьте поля: ник, цель и 16 цифр карты.");
-        return;
+        location.href = `pay.html?line=${line}&ref=${localStorage.getItem(KEY_REF_OWNER) || ""}`;
+      } catch (err) {
+        msg.textContent = "Ошибка связи с базой.";
       }
-
-      // === сохраняем ПРОФИЛЬ ПО ЛИНИИ ===
-      state = ensureDefaults(readState());
-      state.lines[String(line)].profile = { nick: n, goal: g, card: digits };
-
-      // === после регистрации логично стать кандидатом и ждать подтверждения ===
-      state.lines[String(line)].status = "candidate_waiting";
-
-      writeState(state);
-
-      // === переход на оплату, ref_owner протаскиваем дальше ===
-      const refOwner = localStorage.getItem(KEY_REF_OWNER) || "";
-      const qs = `?line=${encodeURIComponent(line)}${refOwner ? `&ref=${encodeURIComponent(refOwner)}` : ""}`;
-
-      window.location.href = "pay.html" + qs;
     });
-
-    // стартовая проверка
-    checkForm();
   });
   </script>
 </body>
