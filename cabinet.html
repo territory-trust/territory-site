@@ -6,6 +6,9 @@
   <title>Личный кабинет</title>
   <link rel="stylesheet" href="styles.css" />
 
+  <!-- Supabase JS (browser) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     /* Нажатие (все кнопки) */
     button, .btn-main, .btn-secondary{
@@ -134,7 +137,7 @@
       <!-- Статус -->
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;"></div>
 
-      <!-- Кнопки действий -->
+      <!-- Кнопки действий (пока “визуал”, без записи) -->
       <div class="actions" id="actionsBox">
         <div class="actionItem">
           <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
@@ -180,10 +183,18 @@
 
   <script>
     // =========================================================
-    // MVP:
-    // Состояния линии:
-    // none | candidate_waiting | confirmed_can_take3 | member
+    // READ-ONLY Supabase (этап 1): только чтение
     // =========================================================
+
+    // 1) ВСТАВЬ СЮДА ДВА ЗНАЧЕНИЯ ИЗ SUPABASE:
+    const SUPABASE_URL = "PASTE_SUPABASE_PROJECT_URL_HERE";
+    const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_PUBLIC_KEY_HERE";
+
+    const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
+      && !SUPABASE_URL.includes("PASTE_")
+      && !SUPABASE_ANON_KEY.includes("PASTE_"))
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
 
     const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
@@ -191,50 +202,16 @@
     function getParams() {
       const p = new URLSearchParams(location.search);
       return {
-        ref: p.get("ref") || "",        // в текущем MVP сюда прилетает MY_ID из warning.html
-        owner: p.get("owner") || "",    // если позже будем передавать владельца явно
+        ref: p.get("ref") || "",
+        owner: p.get("owner") || "",
         line: Number(p.get("line") || 0),
-        role: p.get("role") || ""       // для теста: role=receiver1
+        role: p.get("role") || ""
       };
     }
 
     const KEY_ACTIVE_LINE = "active_line";
     const KEY_MY_ID = "my_id";
     const KEY_REF_OWNER = "ref_owner";
-    const KEY_STATE = "cabinet_state";
-
-    function readState() {
-      try { return JSON.parse(localStorage.getItem(KEY_STATE) || "{}"); }
-      catch { return {}; }
-    }
-    function writeState(state) {
-      localStorage.setItem(KEY_STATE, JSON.stringify(state));
-    }
-
-    function ensureDefaults() {
-      const state = readState();
-      if (!state.lines) state.lines = {};
-      for (const line of LINES) {
-        if (!state.lines[String(line)]) {
-          state.lines[String(line)] = { status: "none", tree: { level1: [], level2: [] } };
-        } else {
-          if (!state.lines[String(line)].tree) state.lines[String(line)].tree = { level1: [], level2: [] };
-          if (!state.lines[String(line)].status) state.lines[String(line)].status = "none";
-        }
-      }
-      writeState(state);
-    }
-
-    function getActiveLine() {
-      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
-      if (LINES.includes(saved)) return saved;
-      return 50;
-    }
-
-    function setActiveLine(line) {
-      localStorage.setItem(KEY_ACTIVE_LINE, String(line));
-      render(line, { pulse: false });
-    }
 
     function safeOn(id, event, handler){
       const el = qs(id);
@@ -255,25 +232,19 @@
       }
     }
 
-    // Статистика по локальному дереву (пока без БД)
-    function renderInviteStats(tree) {
-      const l1 = tree?.level1 || [];
-      const l2 = tree?.level2 || [];
-      const n1 = l1.length;
-      const n2 = l2.length;
-
-      return `
-        <div><b>Уровень 1:</b> ${n1} участников — Вы у них на 2 месте</div>
-        <div style="margin-top:8px;"><b>Уровень 2:</b> ${n2} участников — Вы у них на 1 месте</div>
-        <div style="margin-top:8px;"><b>Уровень 3:</b> - Отправляет помощь Вам</div>
-      `;
+    function getActiveLine() {
+      const saved = Number(localStorage.getItem(KEY_ACTIVE_LINE) || 0);
+      if (LINES.includes(saved)) return saved;
+      return 50;
     }
 
-    function setStatus(line, status, opts = {}) {
-      const state = readState();
-      state.lines[String(line)].status = status;
-      writeState(state);
-      render(line, opts);
+    // Статистика (пока без БД дерева)
+    function renderInviteStats() {
+      return `
+        <div><b>Уровень 1:</b> 0 участников — Вы у них на 2 месте</div>
+        <div style="margin-top:8px;"><b>Уровень 2:</b> 0 участников — Вы у них на 1 месте</div>
+        <div style="margin-top:8px;"><b>Уровень 3:</b> — Отправляет помощь Вам</div>
+      `;
     }
 
     function setAction(btnId, hintId, cfg){
@@ -286,177 +257,167 @@
 
       btn.classList.toggle("soft-disabled", !cfg.enabled);
       btn.classList.toggle("with-lock", !!cfg.lock && !cfg.enabled);
-
-      if (cfg.pulse) {
-        btn.classList.remove("pulse-once");
-        void btn.offsetWidth;
-        btn.classList.add("pulse-once");
-      } else {
-        btn.classList.remove("pulse-once");
-      }
+      btn.classList.remove("pulse-once");
     }
 
-    function render(line, { pulse } = { pulse:false }) {
-      const { role } = getParams();
-      const canModerate = (role === "receiver1");
+    // ---------- READ-ONLY: загрузка данных из Supabase ----------
+    async function dbLoadUser(myId){
+      if (!supabaseClient) return { ok:false, reason:"Supabase не настроен (нет URL/key)." };
 
-      const state = readState();
-      const data = state.lines[String(line)];
-      const status = data.status;
+      // myId должен быть UUID из users.id
+      const { data, error } = await supabaseClient
+        .from("users")
+        .select("id, nickname")
+        .eq("id", myId)
+        .maybeSingle();
 
-      setTabActive(line);
+      if (error) return { ok:false, reason:error.message };
+      if (!data) return { ok:false, reason:"Пользователь не найден в users (по id)." };
 
-      const lineTitle = qs("#lineTitle");
-      if (lineTitle) lineTitle.textContent = `Линия: ${line} ₴`;
+      return { ok:true, user:data };
+    }
 
+    async function dbLoadLines(){
+      if (!supabaseClient) return { ok:false, reason:"Supabase не настроен." };
+      const { data, error } = await supabaseClient
+        .from("lines")
+        .select("id, amount")
+        .in("amount", [10,50,100]);
+
+      if (error) return { ok:false, reason:error.message };
+      const map = {};
+      (data || []).forEach(row => { map[String(row.amount)] = row.id; });
+      return { ok:true, map };
+    }
+
+    async function dbHasParticipation(myId, lineId){
+      if (!supabaseClient) return { ok:false, reason:"Supabase не настроен." };
+
+      const { data, error } = await supabaseClient
+        .from("personal_queues")
+        .select("id, position")
+        .eq("participant_user_id", myId)
+        .eq("line_id", lineId)
+        .limit(1);
+
+      if (error) return { ok:false, reason:error.message };
+      return { ok:true, exists: (data && data.length > 0), row: (data && data[0]) || null };
+    }
+
+    function renderStatusNone(line){
+      const statusBox = qs("#statusBox");
       const joinBox = qs("#joinBox");
       const actionsBox = qs("#actionsBox");
+
+      if (statusBox) statusBox.innerHTML =
+        `Линия: <b>${line} ₴</b><br>` +
+        `Статус: <b>не участвуете</b><br>` +
+        `Чтобы участвовать — пройдите через «Очередь участников».`;
+
+      if (actionsBox) actionsBox.style.display = "none";
+      if (joinBox) joinBox.style.display = "block";
+    }
+
+    function renderStatusMember(line){
       const statusBox = qs("#statusBox");
+      const joinBox = qs("#joinBox");
+      const actionsBox = qs("#actionsBox");
+
+      if (statusBox) statusBox.innerHTML =
+        `Линия: <b>${line} ₴</b><br>` +
+        `Статус: <b>участник</b><br>` +
+        `Данные получены из базы (read-only).`;
 
       if (actionsBox) actionsBox.style.display = "block";
       if (joinBox) joinBox.style.display = "none";
 
-      if (status === "none") {
-        if (statusBox) statusBox.innerHTML =
-          `Статус: <b>не участвуете</b><br>` +
-          `Чтобы участвовать в этой линии — пройдите процедуру через «Очередь участников».`;
-
-        if (actionsBox) actionsBox.style.display = "none";
-        if (joinBox) joinBox.style.display = "block";
-      }
-
-      if (status === "candidate_waiting") {
-        if (statusBox) statusBox.innerHTML =
-          `<div style="
-            margin-top:10px;
-            padding:14px 14px;
-            border-radius:14px;
-            border:1px solid rgba(255,210,90,.55);
-            box-shadow: 0 0 0 2px rgba(255,210,90,.20) inset;
-            text-align:center;
-          ">
-            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
-              🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ
-            </div>
-            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
-              Вы — <b>кандидат</b>. Ждём подтверждения от получателя №1.
-            </div>
-          </div>`;
-
-        setAction("#btnTake3", "#hintTake3", {
-          enabled: false, lock: true,
-          hint: "Станет доступно после подтверждения помощи.",
-          pulse: false
-        });
-
-        setAction("#btnConfirm", "#hintConfirm", {
-          enabled: canModerate,
-          lock: !canModerate,
-          hint: canModerate ? "" : "Доступно только получателю №1.",
-          pulse: false
-        });
-
-        setAction("#btnReject", "#hintReject", {
-          enabled: canModerate,
-          lock: !canModerate,
-          hint: canModerate ? "" : "Доступно только получателю №1.",
-          pulse: false
-        });
-      }
-
-      if (status === "confirmed_can_take3") {
-        if (statusBox) statusBox.innerHTML =
-          `<div style="
-            margin-top:10px;
-            padding:14px 14px;
-            border-radius:14px;
-            border:1px solid rgba(120, 220, 140, .55);
-            box-shadow: 0 0 0 2px rgba(120, 220, 140, .18) inset;
-            text-align:center;
-          ">
-            <div style="font-weight:900; font-size:22px; letter-spacing:.5px;">
-              ✅ ПОДТВЕРЖДЕНО
-            </div>
-            <div style="margin-top:8px; font-size:17px; line-height:1.35;">
-              Теперь можно нажать <b>«Занять 3-е место»</b>.
-            </div>
-          </div>`;
-
-        setAction("#btnTake3", "#hintTake3", {
-          enabled: true, lock: false,
-          hint: "",
-          pulse: !!pulse
-        });
-
-        setAction("#btnConfirm", "#hintConfirm", {
-          enabled: false, lock: true,
-          hint: "Уже подтверждено.",
-          pulse: false
-        });
-
-        setAction("#btnReject", "#hintReject", {
-          enabled: false, lock: true,
-          hint: "Уже подтверждено.",
-          pulse: false
-        });
-      }
-
-      if (status === "member") {
-        if (statusBox) statusBox.innerHTML =
-          `Статус: <b>участник</b><br>` +
-          `У вас есть личная тройка в этой линии, а ваша реф-ссылка ведёт на визитку.`;
-
-        setAction("#btnTake3", "#hintTake3", { enabled:false, lock:true, hint:"Уже занято.", pulse:false });
-        setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
-        setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Не требуется.", pulse:false });
-      }
-
-      const treeBox = qs("#treeBox");
-      if (treeBox) treeBox.innerHTML = renderInviteStats(data.tree);
-
-      showMsg("");
+      setAction("#btnTake3", "#hintTake3", { enabled:false, lock:true, hint:"Пока read-only этап (без записи).", pulse:false });
+      setAction("#btnConfirm", "#hintConfirm", { enabled:false, lock:true, hint:"Пока read-only этап (без записи).", pulse:false });
+      setAction("#btnReject", "#hintReject", { enabled:false, lock:true, hint:"Пока read-only этап (без записи).", pulse:false });
     }
 
-    (function init() {
-      ensureDefaults();
+    async function renderFromDb(line){
+      const lineTitle = qs("#lineTitle");
+      if (lineTitle) lineTitle.textContent = `Линия: ${line} ₴`;
+      setTabActive(line);
 
-      const { ref, owner, line } = getParams();
+      const treeBox = qs("#treeBox");
+      if (treeBox) treeBox.innerHTML = renderInviteStats();
 
-      // ВАЖНО: ref в кабинете сейчас = my_id (из warning.html), поэтому НЕ пишем его в ref_owner.
-      // Если передали owner=... (в будущем) — тогда фиксируем.
-      if (owner) localStorage.setItem(KEY_REF_OWNER, owner);
+      const myId = localStorage.getItem(KEY_MY_ID) || "";
 
-      // Мой ID
-      const myId = localStorage.getItem(KEY_MY_ID) || ref || "TEST123";
-      localStorage.setItem(KEY_MY_ID, myId);
+      // Если my_id ещё не UUID — честно показываем, что база не включится
+      if (!myId || myId.length < 20) {
+        renderStatusNone(line);
+        showMsg("ℹ️ Для чтения из БД нужен my_id = UUID из таблицы users.id. Сейчас у вас в localStorage.my_id не UUID.");
+        return;
+      }
 
-      // ref_owner: если вдруг равен моему ID — очищаем, чтобы не было "сам себя пригласил"
-      const refOwnerRaw = localStorage.getItem(KEY_REF_OWNER) || "";
-      const refOwner = (refOwnerRaw && refOwnerRaw === myId) ? "" : refOwnerRaw;
-      if (refOwnerRaw && refOwnerRaw === myId) localStorage.removeItem(KEY_REF_OWNER);
+      const u = await dbLoadUser(myId);
+      if (!u.ok) {
+        renderStatusNone(line);
+        showMsg("⚠️ База: не смог прочитать пользователя. " + u.reason);
+        return;
+      }
 
       const whoNote = qs("#whoNote");
+      const refOwner = (localStorage.getItem(KEY_REF_OWNER) || "");
       if (whoNote) {
         whoNote.innerHTML =
-          `Ваш ID: <b>${myId}</b>` +
+          `Ваш ID: <b>${u.user.id}</b>` +
+          (u.user.nickname ? `<br>Ник: <b>${u.user.nickname}</b>` : "") +
           (refOwner ? `<br>Пришли по ссылке от: <b>${refOwner}</b>` : "");
       }
 
-      // активная линия: URL → или первая где участвует → или сохранённая/дефолт
-      const state = readState();
-      if (LINES.includes(line)) {
-        localStorage.setItem(KEY_ACTIVE_LINE, String(line));
-        render(line, { pulse:false });
-      } else {
-        const activeFromState = LINES.find(l => state.lines[String(l)]?.status !== "none");
-        const start = activeFromState || getActiveLine();
-        localStorage.setItem(KEY_ACTIVE_LINE, String(start));
-        render(start, { pulse:false });
+      const lm = await dbLoadLines();
+      if (!lm.ok) {
+        renderStatusNone(line);
+        showMsg("⚠️ База: не смог прочитать lines. " + lm.reason);
+        return;
       }
 
-      safeOn("#tab10","click", () => setActiveLine(10));
-      safeOn("#tab50","click", () => setActiveLine(50));
-      safeOn("#tab100","click", () => setActiveLine(100));
+      const lineId = lm.map[String(line)];
+      if (!lineId) {
+        renderStatusNone(line);
+        showMsg("⚠️ База: в таблице lines нет записи для amount=" + line);
+        return;
+      }
+
+      const p = await dbHasParticipation(myId, lineId);
+      if (!p.ok) {
+        renderStatusNone(line);
+        showMsg("⚠️ База: не смог прочитать personal_queues. " + p.reason);
+        return;
+      }
+
+      if (p.exists) {
+        renderStatusMember(line);
+        showMsg("");
+      } else {
+        renderStatusNone(line);
+        showMsg("");
+      }
+    }
+
+    (function init(){
+      const { ref, owner, line } = getParams();
+
+      if (owner) localStorage.setItem(KEY_REF_OWNER, owner);
+
+      // my_id: берём из localStorage, иначе из ref (если ref = UUID), иначе пусто
+      // ВАЖНО: на read-only этапе ref лучше передавать UUID из users.id
+      const currentMy = localStorage.getItem(KEY_MY_ID) || "";
+      const candidate = currentMy || ref || "";
+      if (candidate) localStorage.setItem(KEY_MY_ID, candidate);
+
+      // линия
+      const startLine = LINES.includes(line) ? line : getActiveLine();
+      localStorage.setItem(KEY_ACTIVE_LINE, String(startLine));
+
+      // обработчики
+      safeOn("#tab10","click", () => { localStorage.setItem(KEY_ACTIVE_LINE,"10"); renderFromDb(10); });
+      safeOn("#tab50","click", () => { localStorage.setItem(KEY_ACTIVE_LINE,"50"); renderFromDb(50); });
+      safeOn("#tab100","click", () => { localStorage.setItem(KEY_ACTIVE_LINE,"100"); renderFromDb(100); });
 
       safeOn("#btnPromo","click", () => {
         const me = localStorage.getItem(KEY_MY_ID) || "";
@@ -474,27 +435,9 @@
         location.href = `queue.html?line=${encodeURIComponent(l)}${me ? `&ref=${encodeURIComponent(me)}` : ""}`;
       });
 
-      // действия (MVP)
-      safeOn("#btnTake3","click", () => {
-        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
-        setStatus(l, "member");
-        showMsg("✅ Вы стали участником в этой линии (MVP).");
-      });
-
-      safeOn("#btnConfirm","click", () => {
-        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
-        setStatus(l, "confirmed_can_take3", { pulse:true });
-        showMsg("✅ Подтверждение сделано (MVP). Теперь доступно «Занять 3-е место».");
-      });
-
-      safeOn("#btnReject","click", () => {
-        const l = Number(localStorage.getItem(KEY_ACTIVE_LINE) || "50");
-        setStatus(l, "none");
-        showMsg("⛔ Отклонено (MVP). Сброс участия в линии.");
-      });
+      // стартовый рендер из БД
+      renderFromDb(startLine);
     })();
   </script>
 </body>
 </html>
-
-
