@@ -13,11 +13,13 @@
       margin-top:14px;
       align-items:stretch;
     }
+
     .miniNote{
-      opacity:.85;
+      opacity:.88;
       line-height:1.6;
       font-size:16px;
     }
+
     .block{
       margin-top:12px;
       padding:14px;
@@ -25,10 +27,71 @@
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.15);
     }
+
     .title2{
       font-weight:900;
       font-size:22px;
       margin:0 0 8px 0;
+      letter-spacing:.2px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,210,90,.35);
+      background: rgba(255,210,90,.10);
+      font-weight:700;
+      font-size:14px;
+      margin: 8px 0 0;
+    }
+
+    .mono{
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.65;
+      opacity: .93;
+    }
+
+    .videoBox{
+      width:100%;
+      aspect-ratio: 16 / 9;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:14px;
+    }
+
+    .muted{
+      opacity:.75;
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .faqItem{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.10);
+      margin-top:10px;
+    }
+
+    .faqQ{
+      font-weight:900;
+      margin:0 0 6px 0;
+      font-size:16px;
+    }
+
+    .faqA{
+      margin:0;
+      opacity:.88;
+      line-height:1.6;
+      font-size:15px;
     }
   </style>
 </head>
@@ -40,25 +103,100 @@
 
       <div class="note" id="whoNote" style="line-height:1.6;"></div>
 
+      <!-- ВИДЕО -->
       <div class="block">
-        <div class="title2">Важно</div>
-        <div class="miniNote">
-          Эта страница — отдельная инструкция. Здесь позже появятся:
-          <br>• видео-инструкция
-          <br>• текстовая инструкция
-          <br>• (возможно) отзывы участников
-          <br><br>
-          Сейчас мы просто убрали всплывающее окно и сделали нормальную отдельную страницу,
-          чтобы дальше всё было аккуратно и понятно.
+        <div class="title2">Видео-инструкция</div>
+
+        <!-- ВАРИАНТ 1 (пока заглушка) -->
+        <div class="videoBox" id="videoBox">
+          <div>
+            <div style="font-weight:900; font-size:18px;">Видео будет добавлено здесь</div>
+            <div class="muted" style="margin-top:6px;">
+              Когда будет готово — вставим ссылку (YouTube / файл) и всё заработает без переделок страницы.
+            </div>
+          </div>
+        </div>
+
+        <!-- ВАРИАНТ 2 (когда появится YouTube-ссылка, просто раскомментируешь и вставишь src):
+        <iframe
+          class="videoBox"
+          style="padding:0;"
+          src="https://www.youtube.com/embed/ТУТ_КОД_ВИДЕО"
+          title="Инструкция"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        -->
+
+        <div class="pill">MVP</div>
+        <div class="muted" style="margin-top:8px;">
+          В MVP часть функций имитируется (без базы и без квитанций). Логика участия уже показана наглядно.
         </div>
       </div>
 
+      <!-- МОНОЛИТ ШАГОВ -->
       <div class="block">
-        <div class="title2">Что будет дальше</div>
+        <div class="title2">Как участвовать — одним монолитом</div>
+
+        <div class="mono">
+1) Выберите линию: 10 / 50 / 100.
+   Для каждой линии участие отдельное.
+
+2) Пройдите регистрацию через «Очередь участников».
+   После регистрации вы становитесь кандидатом и ждёте подтверждения от получателя №1.
+
+3) После подтверждения у вас в кабинете появляется действие:
+   «Занять 3-е место» — это фиксирует вашу роль участника в выбранной линии.
+
+4) Дальше вы приглашаете людей по своей реферальной ссылке.
+   Ваши приглашённые формируют уровни в дереве: уровень 1 и уровень 2.
+   Уровень 3 — это тот, кто отправляет помощь Вам.
+
+5) Если получатель №1 не нажал «Подтвердить» или «Отклонить» в течение 24 часов —
+   считается автоподтверждение и процесс продолжается без потери денег.
+
+6) Если получатель №1 нажал «Отклонить» —
+   кандидат блокируется на 1 день; при повторе — навсегда.
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          Примечание: оформление “квитанций” и подключение базы добавим следующим этапом — интерфейс уже подготовлен.
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="block">
+        <div class="title2">Частые вопросы</div>
+
+        <div class="faqItem">
+          <p class="faqQ">Почему регистрация отдельно для каждой линии?</p>
+          <p class="faqA">
+            Потому что в каждой линии своя очередь и свои роли. Это упрощает логику и делает участие прозрачнее.
+          </p>
+        </div>
+
+        <div class="faqItem">
+          <p class="faqQ">Где смотреть свой статус?</p>
+          <p class="faqA">
+            В «Личном кабинете» — там виден статус по линии и доступные действия (кандидат / подтверждено / участник).
+          </p>
+        </div>
+
+        <div class="faqItem">
+          <p class="faqQ">Почему кнопки иногда недоступны?</p>
+          <p class="faqA">
+            Потому что действия открываются только по нужному статусу. Например, «Занять 3-е место» доступно после подтверждения.
+          </p>
+        </div>
+      </div>
+
+      <!-- ОТЗЫВЫ (пока заглушка) -->
+      <div class="block">
+        <div class="title2">Отзывы участников</div>
         <div class="miniNote">
-          1) Добавим видео (файл или ссылка).
-          <br>2) Добавим понятные шаги участия одним монолитом.
-          <br>3) Отдельно обсудим “Отзывы участников”: как правильно и безопасно это реализовать.
+          Этот раздел под вопросом и будет обсуждаться отдельно.
+          <br><span class="muted">Если решим делать — сделаем безопасно: без спама, без фейков и с понятной модерацией.</span>
         </div>
       </div>
 
@@ -91,7 +229,7 @@
     (function init(){
       const { ref, line } = getParams();
 
-      // Пытаемся взять ref из URL, если нет — из localStorage (как у вас в кабинете)
+      // ref из URL → иначе my_id из localStorage → иначе TEST123
       const myId =
         ref ||
         localStorage.getItem("my_id") ||
