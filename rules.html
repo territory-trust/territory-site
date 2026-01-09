@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Правила участия</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .actions{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:14px;
+      align-items:stretch;
+    }
+    .miniNote{
+      opacity:.85;
+      line-height:1.6;
+      font-size:16px;
+    }
+    .block{
+      margin-top:12px;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.15);
+    }
+    .title2{
+      font-weight:900;
+      font-size:22px;
+      margin:0 0 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">Правила участия</h1>
+
+      <div class="note" id="whoNote" style="line-height:1.6;"></div>
+
+      <div class="block">
+        <div class="title2">Важно</div>
+        <div class="miniNote">
+          Эта страница — отдельная инструкция. Здесь позже появятся:
+          <br>• видео-инструкция
+          <br>• текстовая инструкция
+          <br>• (возможно) отзывы участников
+          <br><br>
+          Сейчас мы просто убрали всплывающее окно и сделали нормальную отдельную страницу,
+          чтобы дальше всё было аккуратно и понятно.
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="title2">Что будет дальше</div>
+        <div class="miniNote">
+          1) Добавим видео (файл или ссылка).
+          <br>2) Добавим понятные шаги участия одним монолитом.
+          <br>3) Отдельно обсудим “Отзывы участников”: как правильно и безопасно это реализовать.
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-main" id="btnBackQueue" type="button">Назад в «Очередь участников»</button>
+        <button class="btn-secondary" id="btnCabinet" type="button">Личный кабинет</button>
+      </div>
+
+      <div class="note" id="msg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const qs = (s) => document.querySelector(s);
+
+    function getParams(){
+      const p = new URLSearchParams(location.search);
+      return {
+        ref: p.get("ref") || "",
+        line: Number(p.get("line") || 0)
+      };
+    }
+
+    function safeOn(sel, event, fn){
+      const el = qs(sel);
+      if (!el) return;
+      el.addEventListener(event, fn);
+    }
+
+    (function init(){
+      const { ref, line } = getParams();
+
+      // Пытаемся взять ref из URL, если нет — из localStorage (как у вас в кабинете)
+      const myId =
+        ref ||
+        localStorage.getItem("my_id") ||
+        "TEST123";
+
+      const whoNote = qs("#whoNote");
+      if (whoNote) {
+        whoNote.innerHTML = `Ваш ID: <b>${myId}</b>`;
+      }
+
+      safeOn("#btnBackQueue","click", () => {
+        const l = line || Number(localStorage.getItem("active_line") || "50") || 50;
+        location.href = `queue.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(l)}`;
+      });
+
+      safeOn("#btnCabinet","click", () => {
+        const l = line || Number(localStorage.getItem("active_line") || "50") || 50;
+        location.href = `cabinet.html?ref=${encodeURIComponent(myId)}&line=${encodeURIComponent(l)}`;
+      });
+    })();
+  </script>
+</body>
+</html>
