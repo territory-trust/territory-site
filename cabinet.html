@@ -10,7 +10,7 @@
   <script src="auth.js"></script>
 
   <style>
-    /* Нажатие (все кнопки) */
+    /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
     button, .btn-main, .btn-secondary{
       transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
       -webkit-tap-highlight-color: transparent;
@@ -19,97 +19,28 @@
       transform: translateY(1px) scale(.99);
       filter: brightness(.98);
     }
-
-    /* Табы линий */
     #tab10, #tab50, #tab100{ opacity: .95; }
     .tab-active{ opacity: 1 !important; border: 2px solid #ffd25a !important; }
-
-    /* ===== ЯРЛЫК: ТОЛЬКО ОДНА СТРОКА ===== */
     .shortcutLine{
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      font-size: 15px;
-      line-height: 1.5;
-      opacity: .92;
+      margin-top: 12px; padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);
+      font-size: 15px; line-height: 1.5; opacity: .92;
     }
-
-    /* ===== КНОПКИ ДЕЙСТВИЙ: одинаковые, слева, НЕ на всю ширину ===== */
-    .actions{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-top:14px;
-      align-items:flex-start;
-    }
+    .actions{ display:flex; flex-direction:column; gap:12px; margin-top:14px; align-items:flex-start; }
     .actionItem{ display:block; width:100%; }
-    .actionHint{
-      font-size: 14px;
-      line-height: 1.35;
-      opacity: .82;
-      margin: 6px 6px 0 10px;
-      max-width: 520px;
-    }
-    .actions .btn-main{
-      width: 240px;
-      max-width: 92%;
-      min-height: 54px;
-      text-align: left;
-      padding-left: 16px;
-      padding-right: 16px;
-      box-sizing: border-box;
-    }
-
-    /* “Заблокировано, но видно” */
-    .soft-disabled{
-      opacity: .72 !important;
-      filter: saturate(.95) brightness(.92);
-    }
-
-    /* Замочек слева */
-    .with-lock{
-      position: relative;
-      padding-left: 44px !important;
-    }
-    .with-lock::before{
-      content: "🔒";
-      position:absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 18px;
-      opacity: .9;
-    }
-
-    /* Пульсация “стало доступно” */
+    .actionHint{ font-size: 14px; line-height: 1.35; opacity: .82; margin: 6px 6px 0 10px; max-width: 520px; }
+    .actions .btn-main{ width: 240px; max-width: 92%; min-height: 54px; text-align: left; padding-left: 16px; padding-right: 16px; box-sizing: border-box; }
+    .soft-disabled{ opacity: .72 !important; filter: saturate(.95) brightness(.92); }
+    .with-lock{ position: relative; padding-left: 44px !important; }
+    .with-lock::before{ content: "🔒"; position:absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: .9; }
     @keyframes softPulse {
       0%   { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
       50%  { box-shadow: 0 0 0 6px rgba(255,210,90,.18); filter: brightness(1.06); }
       100% { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
     }
     .pulse-once{ animation: softPulse 1.1s ease-in-out 2; }
-
-    /* Заголовок приглашённых */
-    .treeTitle{
-      font-weight: 900;
-      font-size: clamp(18px, 5.2vw, 22px);
-      margin: 18px 0 10px;
-      letter-spacing: .2px;
-      white-space: nowrap;
-    }
-
-    /* ↓ КНОПКА “ПЕРЕЙТИ В ОЧЕРЕДЬ” — УЗКАЯ И ТОНКАЯ */
-    #btnGoQueue{
-      width: 220px;
-      max-width: 88%;
-      min-height: 44px;
-      padding: 10px 14px;
-      font-size: 14px;
-      text-align: left;
-      box-sizing: border-box;
-    }
+    .treeTitle{ font-weight: 900; font-size: clamp(18px, 5.2vw, 22px); margin: 18px 0 10px; letter-spacing: .2px; white-space: nowrap; }
+    #btnGoQueue{ width: 220px; max-width: 88%; min-height: 44px; padding: 10px 14px; font-size: 14px; text-align: left; box-sizing: border-box; }
   </style>
 </head>
 
@@ -117,7 +48,6 @@
   <div class="wrap">
     <div class="card">
       <h1 style="margin-top:0;">Личный кабинет</h1>
-
       <div class="note" id="whoNote" style="line-height:1.6;">Загрузка ID...</div>
 
       <div class="shortcutLine">
@@ -131,7 +61,6 @@
       </div>
 
       <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;"></div>
-
       <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;">Загрузка данных...</div>
 
       <div class="actions" id="actionsBox">
@@ -139,26 +68,13 @@
           <button class="btn-main" id="btnTake3" type="button" disabled>Занять 3-е место</button>
           <div class="actionHint" id="hintTake3"></div>
         </div>
-
-        <div class="actionItem">
-          <button class="btn-main" id="btnConfirm" type="button" disabled>Подтвердить помощь</button>
-          <div class="actionHint" id="hintConfirm"></div>
-        </div>
-
-        <div class="actionItem">
-          <button class="btn-main" id="btnReject" type="button" disabled>Отклонить</button>
-          <div class="actionHint" id="hintReject"></div>
-        </div>
       </div>
 
       <div id="joinBox" style="display:none; margin-top:16px;">
-        <button class="btn-main" id="btnGoQueue" type="button">
-          Перейти в «Очередь участников»
-        </button>
+        <button class="btn-main" id="btnGoQueue" type="button">Перейти в «Очередь участников»</button>
       </div>
 
       <hr style="margin:18px 0; opacity:.25;" />
-
       <div style="margin-top:6px;">
         <div class="treeTitle">Ваши приглашённые</div>
         <div class="note" id="treeBox" style="line-height:1.6;">
@@ -169,12 +85,10 @@
       </div>
 
       <hr style="margin:18px 0; opacity:.25;" />
-
       <div class="actions" style="margin-top:0;">
         <button class="btn-secondary" id="btnPromo" type="button">Рекламные материалы</button>
         <button class="btn-secondary" id="btnBackQueue" type="button">Очередь участников</button>
       </div>
-
       <div class="note" id="msg" style="margin-top:12px;"></div>
     </div>
   </div>
@@ -184,24 +98,33 @@
     const LINES = [10, 50, 100];
 
     async function init() {
-      // 1. Авторизация
-      const uid = await ensureAnonAuth();
-      let myRefCode = "";
+      // Кнопки должны работать СРАЗУ, не дожидаясь базы
+      qs("#btnPromo").onclick = () => {
+        const myId = localStorage.getItem("my_id") || "ID_NOT_FOUND";
+        location.href = `promo.html?ref=${myId}`;
+      };
+      qs("#btnBackQueue").onclick = () => { location.href = "queue.html"; };
+      qs("#btnGoQueue").onclick = () => { location.href = "queue.html"; };
 
-      // 2. Функция загрузки всех данных
+      // Попытка авторизации
+      let uid;
+      try {
+        uid = await ensureAnonAuth();
+      } catch (e) {
+        qs("#whoNote").textContent = "Ошибка авторизации. Обновите страницу.";
+        return;
+      }
+
       async function loadAll() {
         const line = Number(localStorage.getItem("active_line")) || 10;
         
-        // Получаем профиль из таблицы users
+        // Получаем профиль
         const { data: user } = await window.sb.from('users').select('*').eq('id', uid).single();
         if (user) {
-          myRefCode = user.ref_code;
-          qs("#whoNote").innerHTML = `Ваш ID: <b>${myRefCode}</b>`;
+          localStorage.setItem("my_id", user.ref_code);
+          qs("#whoNote").innerHTML = `Ваш ID: <b>${user.ref_code}</b>`;
           
-          // Считаем приглашенных 1 уровня
-          const { count: n1 } = await window.sb.from('users').select('*', { count: 'exact', head: true }).eq('inviter_code', myRefCode);
-          
-          // Статистика (твой оригинальный текст)
+          const { count: n1 } = await window.sb.from('users').select('*', { count: 'exact', head: true }).eq('inviter_code', user.ref_code);
           qs("#treeBox").innerHTML = `
             <div><b>Уровень 1:</b> ${n1 || 0} участников — Вы у них на 2 месте</div>
             <div style="margin-top:8px;"><b>Уровень 2:</b> 0 участников — Вы у них на 1 месте</div>
@@ -209,74 +132,53 @@
           `;
         }
 
-        // Подсветка табов
         LINES.forEach(l => qs("#tab" + l).classList.toggle("tab-active", l === line));
         qs("#lineTitle").textContent = `Линия: ${line} ₴`;
 
-        // Статус в линии
         const { data: profile } = await window.sb.from('profiles').select('*').eq('user_id', uid).eq('line', line).single();
 
         if (!profile) {
-          qs("#statusBox").innerHTML = `Статус: <b>не участвуете</b><br>Пройдите регистрацию через очередь.`;
+          qs("#statusBox").innerHTML = `Статус: <b>не участвуете</b>`;
           qs("#joinBox").style.display = "block";
           qs("#actionsBox").style.display = "none";
         } else {
           qs("#joinBox").style.display = "none";
           qs("#actionsBox").style.display = "flex";
-          renderStatus(profile.status);
+          
+          const btn = qs("#btnTake3");
+          const hint = qs("#hintTake3");
+          const sBox = qs("#statusBox");
+
+          if (profile.status === 'candidate_waiting') {
+            sBox.innerHTML = `<div style="border:1px solid rgba(255,210,90,.5); padding:10px; border-radius:10px; text-align:center;">🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ</div>`;
+            btn.disabled = true;
+            btn.classList.add("with-lock", "soft-disabled");
+            hint.textContent = "Станет доступно после подтверждения.";
+          } else if (profile.status === 'confirmed_can_take3') {
+            sBox.innerHTML = `<div style="border:1px solid rgba(120, 220, 140,.5); padding:10px; border-radius:10px; text-align:center;">✅ ПОДТВЕРЖДЕНО</div>`;
+            btn.disabled = false;
+            btn.classList.remove("with-lock", "soft-disabled");
+            btn.classList.add("pulse-once");
+            hint.textContent = "Нажимайте!";
+          } else {
+            sBox.innerHTML = `Статус: <b>Участник</b>`;
+            btn.disabled = true;
+            hint.textContent = "Вы в очереди.";
+          }
         }
       }
 
-      function renderStatus(status) {
-        // Логика визуализации статусов (кандидат/подтвержден/участник)
-        if (status === 'candidate_waiting') {
-          qs("#statusBox").innerHTML = `
-            <div style="margin-top:10px; padding:14px; border-radius:14px; border:1px solid rgba(255,210,90,.55); text-align:center;">
-              <div style="font-weight:900; font-size:22px;">🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ</div>
-              <div style="margin-top:8px;">Вы — <b>кандидат</b>. Ждём подтверждения от получателя №1.</div>
-            </div>`;
-          applyBtnConfig("#btnTake3", "#hintTake3", { enabled: false, lock: true, hint: "Станет доступно после подтверждения." });
-        } else if (status === 'confirmed_can_take3') {
-          qs("#statusBox").innerHTML = `
-            <div style="margin-top:10px; padding:14px; border-radius:14px; border:1px solid rgba(120, 220, 140,.55); text-align:center;">
-              <div style="font-weight:900; font-size:22px;">✅ ПОДТВЕРЖДЕНО</div>
-              <div style="margin-top:8px;">Теперь можно нажать <b>«Занять 3-е место»</b>.</div>
-            </div>`;
-          applyBtnConfig("#btnTake3", "#hintTake3", { enabled: true, lock: false, hint: "Помощь подтверждена! Нажимайте.", pulse: true });
-        } else if (status === 'member') {
-          qs("#statusBox").innerHTML = `Статус: <b>участник</b><br>Вы в очереди!`;
-          applyBtnConfig("#btnTake3", "#hintTake3", { enabled: false, lock: true, hint: "Вы уже заняли место в очереди." });
-        }
-      }
-
-      function applyBtnConfig(btnId, hintId, cfg) {
-        const btn = qs(btnId);
-        const hint = qs(hintId);
-        btn.disabled = !cfg.enabled;
-        hint.textContent = cfg.hint || "";
-        btn.classList.toggle("soft-disabled", !cfg.enabled);
-        btn.classList.toggle("with-lock", !!cfg.lock);
-        if (cfg.pulse) btn.classList.add("pulse-once");
-      }
-
-      // Кнопки табов
       LINES.forEach(l => {
         qs("#tab" + l).onclick = () => { localStorage.setItem("active_line", l); loadAll(); };
       });
 
-      // Переходы по кнопкам
-      qs("#btnPromo").onclick = () => { location.href = `promo.html?ref=${myRefCode}`; };
-      qs("#btnBackQueue").onclick = () => { location.href = "queue.html"; };
-      qs("#btnGoQueue").onclick = () => { location.href = "queue.html"; };
-
-      // Логика нажатия "Занять 3-е место"
       qs("#btnTake3").onclick = async () => {
         const line = localStorage.getItem("active_line") || "10";
-        const { error } = await window.sb.from('profiles').update({ status: 'member' }).eq('user_id', uid).eq('line', line);
-        if (!error) loadAll();
+        await window.sb.from('profiles').update({ status: 'member' }).eq('user_id', uid).eq('line', line);
+        loadAll();
       };
 
-      await loadAll();
+      loadAll();
     }
 
     init();
