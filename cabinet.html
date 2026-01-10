@@ -92,38 +92,47 @@
       <div class="note" id="msg" style="margin-top:12px;"></div>
     </div>
   </div>
-
-  <script>
+<script>
     const qs = (s) => document.querySelector(s);
     const LINES = [10, 50, 100];
 
     async function init() {
-      // Кнопки должны работать СРАЗУ, не дожидаясь базы
-      qs("#btnPromo").onclick = () => {
-        const myId = localStorage.getItem("my_id") || "ID_NOT_FOUND";
-        location.href = `promo.html?ref=${myId}`;
-      };
-      qs("#btnBackQueue").onclick = () => { location.href = "queue.html"; };
-      qs("#btnGoQueue").onclick = () => { location.href = "queue.html"; };
-
-      // Попытка авторизации
+      // 1. Сначала авторизация
       let uid;
       try {
         uid = await ensureAnonAuth();
       } catch (e) {
-        qs("#whoNote").textContent = "Ошибка авторизации. Обновите страницу.";
+        qs("#whoNote").textContent = "Ошибка входа. Обновите страницу.";
         return;
       }
 
+      // 2. СРАЗУ загружаем данные пользователя, чтобы получить реальный ID
+      const { data: user } = await window.sb.from('users').select('ref_code').eq('id', uid).single();
+      
+      if (user) {
+        // Сохраняем реальный ID в память телефона
+        localStorage.setItem("my_id", user.ref_code);
+        qs("#whoNote").innerHTML = `Ваш ID: <b>${user.ref_code}</b>`;
+      } else {
+        qs("#whoNote").innerHTML = "Профиль не найден в базе.";
+      }
+
+      // 3. Теперь настраиваем кнопку "Рекламные материалы"
+      qs("#btnPromo").onclick = () => {
+        // Берем ID либо из базы (user.ref_code), либо из памяти
+        const myId = (user && user.ref_code) || localStorage.getItem("my_id") || "ID_LOADING";
+        location.href = `promo.html?ref=${myId}`;
+      };
+
+      // Кнопки очереди
+      qs("#btnBackQueue").onclick = () => { location.href = "queue.html"; };
+      qs("#btnGoQueue").onclick = () => { location.href = "queue.html"; };
+
+      // 4. Загрузка статистики и статусов
       async function loadAll() {
         const line = Number(localStorage.getItem("active_line")) || 10;
         
-        // Получаем профиль
-        const { data: user } = await window.sb.from('users').select('*').eq('id', uid).single();
         if (user) {
-          localStorage.setItem("my_id", user.ref_code);
-          qs("#whoNote").innerHTML = `Ваш ID: <b>${user.ref_code}</b>`;
-          
           const { count: n1 } = await window.sb.from('users').select('*', { count: 'exact', head: true }).eq('inviter_code', user.ref_code);
           qs("#treeBox").innerHTML = `
             <div><b>Уровень 1:</b> ${n1 || 0} участников — Вы у них на 2 месте</div>
@@ -144,27 +153,30 @@
         } else {
           qs("#joinBox").style.display = "none";
           qs("#actionsBox").style.display = "flex";
-          
-          const btn = qs("#btnTake3");
-          const hint = qs("#hintTake3");
-          const sBox = qs("#statusBox");
+          renderStatus(profile.status);
+        }
+      }
 
-          if (profile.status === 'candidate_waiting') {
-            sBox.innerHTML = `<div style="border:1px solid rgba(255,210,90,.5); padding:10px; border-radius:10px; text-align:center;">🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ</div>`;
-            btn.disabled = true;
-            btn.classList.add("with-lock", "soft-disabled");
-            hint.textContent = "Станет доступно после подтверждения.";
-          } else if (profile.status === 'confirmed_can_take3') {
-            sBox.innerHTML = `<div style="border:1px solid rgba(120, 220, 140,.5); padding:10px; border-radius:10px; text-align:center;">✅ ПОДТВЕРЖДЕНО</div>`;
-            btn.disabled = false;
-            btn.classList.remove("with-lock", "soft-disabled");
-            btn.classList.add("pulse-once");
-            hint.textContent = "Нажимайте!";
-          } else {
-            sBox.innerHTML = `Статус: <b>Участник</b>`;
-            btn.disabled = true;
-            hint.textContent = "Вы в очереди.";
-          }
+      function renderStatus(status) {
+        const btn = qs("#btnTake3");
+        const hint = qs("#hintTake3");
+        const sBox = qs("#statusBox");
+
+        if (status === 'candidate_waiting') {
+          sBox.innerHTML = `<div style="border:1px solid rgba(255,210,90,.5); padding:10px; border-radius:10px; text-align:center;">🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ</div>`;
+          btn.disabled = true;
+          btn.classList.add("with-lock", "soft-disabled");
+          hint.textContent = "Станет доступно после подтверждения.";
+        } else if (status === 'confirmed_can_take3') {
+          sBox.innerHTML = `<div style="border:1px solid rgba(120, 220, 140,.5); padding:10px; border-radius:10px; text-align:center;">✅ ПОДТВЕРЖДЕНО</div>`;
+          btn.disabled = false;
+          btn.classList.remove("with-lock", "soft-disabled");
+          btn.classList.add("pulse-once");
+          hint.textContent = "Нажимайте!";
+        } else {
+          sBox.innerHTML = `Статус: <b>Участник</b>`;
+          btn.disabled = true;
+          hint.textContent = "Вы в очереди.";
         }
       }
 
@@ -183,5 +195,6 @@
 
     init();
   </script>
+  
 </body>
 </html>
