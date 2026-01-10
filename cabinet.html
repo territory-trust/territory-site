@@ -9,18 +9,36 @@
   <script src="supabase-client.js"></script>
   <script src="auth.js"></script>
   <style>
-    /* Твой красивый интерфейс */
-    button, .btn-main, .btn-secondary { transition: transform .08s ease; -webkit-tap-highlight-color: transparent; }
-    button:active { transform: scale(.98); }
-    .tab-active { border: 2px solid #ffd25a !important; opacity: 1 !important; }
-    .treeTitle { font-weight: 900; font-size: 20px; margin: 15px 0; }
-    .note { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px; }
+    /* ВОЗВРАЩАЕМ ТВОЙ СТИЛЬ */
+    button, .btn-main, .btn-secondary {
+      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active { transform: translateY(1px) scale(.99); filter: brightness(.98); }
+    
+    /* ЗОЛОТАЯ РАМКА ДЛЯ ТАБОВ */
+    .tab-active { 
+      border: 2px solid #ffd25a !important; 
+      box-shadow: 0 0 10px rgba(255,210,90,0.3);
+      opacity: 1 !important; 
+    }
+    
+    .treeTitle { font-weight: 900; font-size: 22px; margin: 18px 0 10px; letter-spacing: .2px; }
+    .note { line-height: 1.6; margin-bottom: 10px; }
+    
+    /* ТВОИ КНОПКИ С ЗАМОЧКОМ */
+    .with-lock { position: relative; padding-left: 44px !important; }
+    .with-lock::before {
+      content: "🔒"; position: absolute; left: 16px; top: 50%;
+      transform: translateY(-50%); font-size: 18px; opacity: .9;
+    }
+    .soft-disabled { opacity: .72 !important; filter: saturate(.95) brightness(.92); }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Личный кабинет</h1>
+      <h1 style="margin-top:0;">Личный кабинет</h1>
       <div class="note" id="whoNote">Загрузка профиля...</div>
 
       <div style="display:flex; gap:10px; margin:16px 0;">
@@ -29,57 +47,112 @@
         <button class="btn-secondary" id="tab100">100 ₴</button>
       </div>
 
+      <div class="note" id="lineTitle" style="font-weight:700;">Линия: --</div>
       <div class="note" id="statusBox">Загрузка статуса...</div>
 
-      <div class="treeTitle">Ваши приглашённые</div>
-      <div class="note" id="treeBox">
-        Уровень 1: 0 участников<br>
-        Уровень 2: 0 участников
+      <div class="actions" id="actionsBox" style="display:none; flex-direction:column; gap:12px; display:flex;">
+        <button class="btn-main" id="btnTake3" disabled>Занять 3-е место</button>
+        <div class="actionHint" id="hintTake3" style="font-size:14px; opacity:0.8;"></div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-        <button class="btn-main" id="btnCopyLink">🔗 Скопировать реф-ссылку</button>
+      <div id="joinBox" style="display:none; margin-top:16px;">
+        <button class="btn-main" onclick="location.href='queue.html'">Перейти в «Очередь участников»</button>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+      
+      <div class="treeTitle">Ваши приглашённые</div>
+      <div class="note" id="treeBox">
+        <div id="lev1"><b>Уровень 1:</b> 0 участников — Вы у них на 2 месте</div>
+        <div id="lev2" style="margin-top:8px;"><b>Уровень 2:</b> 0 участников — Вы у них на 1 месте</div>
+        <div id="lev3" style="margin-top:8px;"><b>Уровень 3:</b> - Отправляет помощь Вам</div>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+      
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="btn-secondary" id="btnPromo">Рекламные материалы</button>
         <button class="btn-secondary" onclick="location.href='queue.html'">Очередь участников</button>
       </div>
+      <div id="msg" style="margin-top:12px; color:#ffd25a; text-align:center;"></div>
     </div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const uid = await ensureAnonAuth();
-      let myIdCode = "";
+      let myCode = "";
 
-      // 1. Получаем данные пользователя из таблицы users
-      const { data: user, error } = await window.sb.from('users').select('*').eq('id', uid).single();
-      
-      if (user) {
-        myIdCode = user.ref_code;
-        document.getElementById("whoNote").innerHTML = `Ваш ID: <b>${myIdCode}</b>`;
+      async function loadData() {
+        const activeLine = localStorage.getItem("active_line") || "10";
         
-        // Считаем приглашенных (Уровень 1)
-        const { count } = await window.sb.from('users')
-          .select('*', { count: 'exact', head: true })
-          .eq('inviter_code', myIdCode);
+        // 1. Кто я?
+        const { data: user } = await window.sb.from('users').select('*').eq('id', uid).single();
+        if (user) {
+          myCode = user.ref_code;
+          document.getElementById("whoNote").innerHTML = `Ваш ID: <b>${myCode}</b>`;
+          
+          // 2. Считаем приглашенных (Уровень 1)
+          const { count: c1 } = await window.sb.from('users').select('*', {count:'exact', head:true}).eq('inviter_code', myCode);
+          document.getElementById("lev1").innerHTML = `<b>Уровень 1:</b> ${c1 || 0} участников — Вы у них на 2 месте`;
+        }
+
+        // 3. Статус линии
+        const { data: prof } = await window.sb.from('profiles').select('*').eq('user_id', uid).eq('line', activeLine).single();
         
-        document.getElementById("treeBox").innerHTML = `
-          <b>Уровень 1:</b> ${count || 0} участников<br>
-          <b>Уровень 2:</b> 0 участников (в разработке)
-        `;
-      } else {
-        document.getElementById("whoNote").innerHTML = "Ошибка: Профиль не найден. Пройдите регистрацию.";
+        const tabs = [10, 50, 100];
+        tabs.forEach(t => document.getElementById("tab"+t).classList.toggle("tab-active", String(t) === activeLine));
+        document.getElementById("lineTitle").textContent = `Линия: ${activeLine} ₴`;
+
+        if (!prof) {
+          document.getElementById("statusBox").innerHTML = "Статус: <b>не участвуете</b>";
+          document.getElementById("joinBox").style.display = "block";
+          document.getElementById("actionsBox").style.display = "none";
+        } else {
+          document.getElementById("joinBox").style.display = "none";
+          document.getElementById("actionsBox").style.display = "flex";
+          updateButtons(prof.status);
+        }
       }
 
-      // 2. Логика копирования ссылки
-      document.getElementById("btnCopyLink").onclick = () => {
-        if (!myIdCode) return alert("ID еще не загружен");
-        const link = `https://territory-trust.github.io/territory-site/register.html?ref=${myIdCode}`;
+      function updateButtons(status) {
+        const btn = document.getElementById("btnTake3");
+        const hint = document.getElementById("hintTake3");
+        const sBox = document.getElementById("statusBox");
+
+        if (status === 'candidate_waiting') {
+          sBox.innerHTML = "🕒 Ожидаем подтверждения от получателя №1";
+          btn.disabled = true;
+          btn.classList.add("with-lock", "soft-disabled");
+          hint.textContent = "Станет доступно после подтверждения.";
+        } else if (status === 'confirmed_can_take3') {
+          sBox.innerHTML = "✅ Помощь подтверждена!";
+          btn.disabled = false;
+          btn.classList.remove("with-lock", "soft-disabled");
+          hint.textContent = "Нажимайте, чтобы занять место в очереди.";
+        } else if (status === 'member') {
+          sBox.innerHTML = "Статус: <b>Участник очереди</b>";
+          btn.disabled = true;
+          hint.textContent = "Вы уже в списке участников.";
+        }
+      }
+
+      // Кнопка Рекламные материалы
+      document.getElementById("btnPromo").onclick = () => {
+        const link = `https://territory-trust.github.io/territory-site/register.html?ref=${myCode}`;
         navigator.clipboard.writeText(link);
-        alert("Ссылка скопирована!\n" + link);
+        alert("Твоя реф-ссылка скопирована:\n" + link);
       };
 
-      // 3. Подсветка вкладок
-      const activeLine = localStorage.getItem("active_line") || "10";
-      document.getElementById("tab" + activeLine).classList.add("tab-active");
+      // Табы
+      [10, 50, 100].forEach(l => {
+        document.getElementById("tab"+l).onclick = () => {
+          localStorage.setItem("active_line", l);
+          loadData();
+        };
+      });
+
+      loadData();
     });
   </script>
 </body>
