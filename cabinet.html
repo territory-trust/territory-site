@@ -8,81 +8,187 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="auth.js"></script>
+
+  <style>
+    /* Твой оригинальный дизайн */
+    button, .btn-main, .btn-secondary{
+      transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active, .btn-main:active, .btn-secondary:active{
+      transform: translateY(1px) scale(.99);
+      filter: brightness(.98);
+    }
+    #tab10, #tab50, #tab100{ opacity: .95; }
+    .tab-active{ opacity: 1 !important; border: 2px solid #ffd25a !important; }
+    .shortcutLine{
+      margin-top: 12px; padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);
+      font-size: 15px; line-height: 1.5; opacity: .92;
+    }
+    .actions{ display:flex; flex-direction:column; gap:12px; margin-top:14px; align-items:flex-start; }
+    .actionItem{ display:block; width:100%; }
+    .actionHint{ font-size: 14px; line-height: 1.35; opacity: .82; margin: 6px 6px 0 10px; max-width: 520px; }
+    .actions .btn-main{ width: 240px; max-width: 92%; min-height: 54px; text-align: left; padding-left: 16px; padding-right: 16px; box-sizing: border-box; }
+    .soft-disabled{ opacity: .72 !important; filter: saturate(.95) brightness(.92); }
+    .with-lock{ position: relative; padding-left: 44px !important; }
+    .with-lock::before{ content: "🔒"; position:absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: .9; }
+    @keyframes softPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
+      50%  { box-shadow: 0 0 0 6px rgba(255,210,90,.18); filter: brightness(1.06); }
+      100% { box-shadow: 0 0 0 0 rgba(255,210,90,.0); filter: brightness(1); }
+    }
+    .pulse-once{ animation: softPulse 1.1s ease-in-out 2; }
+    .treeTitle{ font-weight: 900; font-size: clamp(18px, 5.2vw, 22px); margin: 18px 0 10px; letter-spacing: .2px; white-space: nowrap; }
+    #btnGoQueue{ width: 220px; max-width: 88%; min-height: 44px; padding: 10px 14px; font-size: 14px; text-align: left; box-sizing: border-box; }
+  </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Личный кабинет</h1>
-      <div class="note" id="whoNote">Загрузка...</div>
-      
+      <h1 style="margin-top:0;">Личный кабинет</h1>
+      <div class="note" id="whoNote" style="line-height:1.6;">Загрузка профиля...</div>
+
+      <div class="shortcutLine">
+        📌 Ярлык на рабочий стол: меню браузера (⋮) → «Добавить на главный экран».
+      </div>
+
       <div style="display:flex; gap:10px; margin:16px 0;">
         <button class="btn-secondary" id="tab10">10 ₴</button>
         <button class="btn-secondary" id="tab50">50 ₴</button>
         <button class="btn-secondary" id="tab100">100 ₴</button>
       </div>
 
-      <div class="note" id="statusBox">Загрузка статуса...</div>
+      <div class="note" id="lineTitle" style="margin-top:10px; font-weight:700;">Линия: --</div>
+      <div class="note" id="statusBox" style="margin-top:10px; line-height:1.6;">Загрузка статуса...</div>
 
       <div class="actions" id="actionsBox" style="display:none;">
+        <div class="actionItem">
           <button class="btn-main" id="btnTake3" disabled>Занять 3-е место</button>
-          <p id="hintTake3" style="font-size:12px; margin-top:5px;"></p>
+          <div class="actionHint" id="hintTake3"></div>
+        </div>
       </div>
 
-      <div id="joinBox" style="display:none;">
-        <button class="btn-main" onclick="location.href='queue.html'">Перейти в очередь</button>
+      <div id="joinBox" style="display:none; margin-top:16px;">
+        <button class="btn-main" id="btnGoQueue">Перейти в «Очередь участников»</button>
       </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+      <div style="margin-top:6px;">
+        <div class="treeTitle">Ваши приглашённые</div>
+        <div class="note" id="treeBox" style="line-height:1.6;">Загрузка статистики...</div>
+      </div>
+
+      <hr style="margin:18px 0; opacity:.25;" />
+      <div class="actions" style="margin-top:0;">
+        <button class="btn-secondary" id="btnPromo">Рекламные материалы</button>
+        <button class="btn-secondary" onclick="location.href='queue.html'">Очередь участников</button>
+      </div>
+      <div id="msg" style="margin-top:12px; color:#ffd25a; text-align:center;"></div>
     </div>
   </div>
 
   <script>
+    const qs = (s) => document.querySelector(s);
+    const LINES = [10, 50, 100];
+    let currentUID = null;
+    let myRefCode = "";
+
     document.addEventListener("DOMContentLoaded", async () => {
-      const uid = await ensureAnonAuth();
-      const LINES = [10, 50, 100];
-      
-      async function loadData() {
-        const line = Number(localStorage.getItem("active_line")) || 10;
-        
-        // Получаем профиль
-        const { data: user } = await window.sb.from('users').select('*').eq('id', uid).single();
+      currentUID = await ensureAnonAuth();
+      let activeLine = Number(localStorage.getItem("active_line")) || 10;
+
+      // 1. Загрузка данных пользователя
+      async function loadUser() {
+        const { data: user } = await window.sb.from('users').select('*').eq('id', currentUID).single();
         if (user) {
-          document.getElementById("whoNote").innerHTML = `ID: <b>${user.ref_code}</b>`;
-          localStorage.setItem("my_id", user.ref_code);
-        }
-
-        // Получаем статус линии
-        const { data: profile } = await window.sb.from('profiles').select('*').eq('user_id', uid).eq('line', line).single();
-        
-        const statusBox = document.getElementById("statusBox");
-        const actionsBox = document.getElementById("actionsBox");
-        const joinBox = document.getElementById("joinBox");
-
-        if (!profile) {
-          statusBox.innerHTML = "Вы не участвуете в этой линии";
-          joinBox.style.display = "block";
-          actionsBox.style.display = "none";
-        } else {
-          joinBox.style.display = "none";
-          actionsBox.style.display = "block";
-          statusBox.innerHTML = `Статус: <b>${profile.status}</b>`;
-          
-          if (profile.status === 'confirmed_can_take3') {
-            document.getElementById("btnTake3").disabled = false;
-            document.getElementById("hintTake3").textContent = "Помощь подтверждена! Нажимайте.";
-          } else {
-            document.getElementById("btnTake3").disabled = true;
-            document.getElementById("hintTake3").textContent = "Ожидайте подтверждения от получателя.";
-          }
+          myRefCode = user.ref_code;
+          qs("#whoNote").innerHTML = `Ваш ID: <b>${myRefCode}</b>`;
+          loadStats(); // Загружаем уровни после получения ID
         }
       }
 
+      // 2. Статистика уровней
+      async function loadStats() {
+        // Уровень 1: Кто указал мой код как пригласителя
+        const { count: countL1 } = await window.sb.from('users')
+          .select('*', { count: 'exact', head: true })
+          .eq('inviter_code', myRefCode);
+
+        // Уровень 2: Упрощенная логика для MVP (считаем вторых рефералов)
+        // В полной версии здесь будет сложный запрос, пока выведем базу
+        qs("#treeBox").innerHTML = `
+          <div><b>Уровень 1:</b> ${countL1 || 0} участников — Вы у них на 2 месте</div>
+          <div style="margin-top:8px;"><b>Уровень 2:</b> 0 участников — Вы у них на 1 месте</div>
+          <div style="margin-top:8px;"><b>Уровень 3:</b> - Отправляет помощь Вам</div>
+        `;
+      }
+
+      // 3. Статус в линии
+      async function loadLineData(line) {
+        localStorage.setItem("active_line", line);
+        LINES.forEach(l => qs("#tab"+l).classList.toggle("tab-active", l === line));
+        qs("#lineTitle").textContent = `Линия: ${line} ₴`;
+
+        const { data: profile } = await window.sb.from('profiles').select('*').eq('user_id', currentUID).eq('line', line).single();
+
+        if (!profile) {
+          qs("#statusBox").innerHTML = "Статус: <b>не участвуете</b>";
+          qs("#joinBox").style.display = "block";
+          qs("#actionsBox").style.display = "none";
+        } else {
+          qs("#joinBox").style.display = "none";
+          qs("#actionsBox").style.display = "block";
+          renderStatus(profile.status);
+        }
+      }
+
+      function renderStatus(status) {
+        const box = qs("#statusBox");
+        const btn = qs("#btnTake3");
+        const hint = qs("#hintTake3");
+
+        if (status === 'candidate_waiting') {
+          box.innerHTML = `<div style="border:1px solid #ffd25a; padding:10px; border-radius:10px; text-align:center;">🕒 ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ</div>`;
+          btn.disabled = true;
+          btn.classList.add("with-lock", "soft-disabled");
+          hint.textContent = "Станет доступно после подтверждения помощи.";
+        } 
+        else if (status === 'confirmed_can_take3') {
+          box.innerHTML = `<div style="border:1px solid #78dc8c; padding:10px; border-radius:10px; text-align:center;">✅ ПОДТВЕРЖДЕНО</div>`;
+          btn.disabled = false;
+          btn.classList.remove("with-lock", "soft-disabled");
+          btn.classList.add("pulse-once");
+          hint.textContent = "Помощь подтверждена! Нажимайте.";
+        }
+        else if (status === 'member') {
+          box.innerHTML = "Статус: <b>Участник</b>";
+          btn.disabled = true;
+          hint.textContent = "Вы уже в очереди!";
+        }
+      }
+
+      // Кнопка "Занять место"
+      qs("#btnTake3").onclick = async () => {
+        const line = localStorage.getItem("active_line");
+        const { error } = await window.sb.from('profiles').update({ status: 'member' }).eq('user_id', currentUID).eq('line', line);
+        if (!error) {
+          qs("#msg").textContent = "✅ Успешно! Вы стали участником.";
+          loadLineData(Number(line));
+        }
+      };
+
+      // Переключение вкладок
       LINES.forEach(l => {
-        document.getElementById("tab"+l).onclick = () => {
-          localStorage.setItem("active_line", l);
-          loadData();
-        };
+        qs("#tab"+l).onclick = () => loadLineData(l);
       });
 
-      loadData();
+      qs("#btnPromo").onclick = () => location.href = `promo.html?ref=${myRefCode}`;
+      qs("#btnGoQueue").onclick = () => location.href = `queue.html?line=${localStorage.getItem("active_line")}`;
+
+      await loadUser();
+      loadLineData(activeLine);
     });
   </script>
 </body>
