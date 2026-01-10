@@ -9,12 +9,12 @@
   <script src="supabase-client.js"></script>
   <script src="auth.js"></script>
   <style>
-    /* Твои стили без изменений */
     .wrap.pay .card { padding-bottom: 18px; }
     .kv .v { font-weight: 800; font-size: 18px; }
-    .copy-mini{ border: 1px solid rgba(255,210,90,.45); background: rgba(10, 80, 150, .25); border-radius: 999px; padding: 10px 14px; cursor: pointer; }
-    .checkRow{ display:flex; gap: 12px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); }
-    .file-btn { display: inline-block; padding: 10px; background: #333; color: #fff; cursor: pointer; border-radius: 8px; }
+    .copy-mini { border: 1px solid rgba(255,210,90,.45); background: rgba(10, 80, 150, .25); border-radius: 999px; padding: 10px 14px; cursor: pointer; color: #ffd25a; font-weight: bold; }
+    .checkRow { display:flex; gap: 12px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); align-items: center; }
+    .file-btn { display: inline-block; padding: 14px; background: #2a5298; color: #fff; cursor: pointer; border-radius: 10px; text-align: center; width: 100%; box-sizing: border-box; font-weight: bold; }
+    #notifyChk { width: 20px; height: 20px; }
   </style>
 </head>
 <body>
@@ -28,99 +28,108 @@
           <div class="k">Получатель (№1 в очереди)</div>
           <div class="v" id="toNick">Загрузка...</div>
         </div>
-        <div class="kv">
+        <div class="kv" style="margin-top:15px;">
           <div class="k">Номер карты</div>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; justify-content: space-between; gap:10px;">
             <div class="v" id="toCard">Загрузка...</div>
             <button id="copyBtn" class="copy-mini">📋 COPY</button>
           </div>
         </div>
       </div>
 
-      <div class="box">
-        <label class="file-btn" for="receiptFile">📎 Прикрепить квитанцию</label>
-        <input type="file" id="receiptFile" accept="image/*" hidden>
-        <div id="fileName" style="margin-top:10px; font-size:12px;"></div>
+      <div class="box" style="margin-top:20px;">
+        <label class="file-btn" for="receiptFile" id="fileLabel">📎 Прикрепить квитанцию</label>
+        <input type="file" id="receiptFile" accept="image/*" style="display:none;">
+        <div id="fileName" style="margin-top:10px; font-size:13px; color: #fff; text-align: center;"></div>
       </div>
 
       <div class="box">
         <div class="checkRow">
-          <input id="notifyChk" type="checkbox" />
-          <span>🔔 Включить уведомления</span>
+          <input id="notifyChk" type="checkbox">
+          <span style="font-size: 14px;">🔔 Включить уведомления</span>
         </div>
       </div>
 
-      <div style="display:flex; gap:10px; margin-top:20px;">
-        <button class="btn-main" id="sentBtn" disabled style="flex:1">Далее</button>
+      <div style="display:flex; gap:10px; margin-top:25px;">
+        <button class="btn-main" id="sentBtn" disabled style="flex:1; opacity: 0.5;">Далее</button>
         <button class="btn-secondary" onclick="history.back()" style="flex:1">Назад</button>
       </div>
-      <div id="resultMsg" style="margin-top:10px; color: #ffd25a;"></div>
+      <div id="resultMsg" style="margin-top:15px; color: #ffd25a; text-align: center; font-weight: bold;"></div>
     </div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      const uid = await ensureAnonAuth();
+      // 1. Авторизация
+      let uid;
+      try { uid = await ensureAnonAuth(); } catch (e) { console.error(e); }
+
       const p = new URLSearchParams(location.search);
       const line = p.get("line") || localStorage.getItem("active_line") || "10";
       
       document.getElementById("linePill").textContent = line;
       document.getElementById("sumText").textContent = line + " ₴";
 
-      // 1. Загружаем данные получателя №1 из базы
-      // Временно используем твои демо-данные, если база пуста
-      const { data: queue } = await window.sb.from('queues').select('participant_id').eq('line', line).eq('pos', 1).single();
-      
-      if (queue) {
-          const { data: profile } = await window.sb.from('profiles').select('nick, full_card').eq('user_id', queue.participant_id).single();
-          if (profile) {
-              document.getElementById("toNick").textContent = profile.nick;
-              document.getElementById("toCard").textContent = profile.full_card;
+      // 2. Поиск получателя
+      async function fetchRecipient() {
+        const { data: queue } = await window.sb.from('queues').select('participant_id').eq('line', line).eq('pos', 1).single();
+        if (queue) {
+          const { data: prof } = await window.sb.from('profiles').select('nick, full_card').eq('user_id', queue.participant_id).single();
+          if (prof) {
+            document.getElementById("toNick").textContent = prof.nick;
+            document.getElementById("toCard").textContent = prof.full_card;
+            return;
           }
-      } else {
-          // Заглушка, если в базе еще никого нет
-          document.getElementById("toNick").textContent = "Система (Резерв)";
-          document.getElementById("toCard").textContent = "4441 0000 0000 0000";
+        }
+        // Если в базе пусто — показываем Админа
+        document.getElementById("toNick").textContent = "Администратор";
+        document.getElementById("toCard").textContent = "4441 0000 0000 0000";
       }
+      fetchRecipient();
 
-      const receipt = document.getElementById("receiptFile");
+      // 3. Логика кнопок
+      const fileInput = document.getElementById("receiptFile");
       const notify = document.getElementById("notifyChk");
       const sentBtn = document.getElementById("sentBtn");
 
-      receipt.onchange = () => {
-          document.getElementById("fileName").textContent = receipt.files[0]?.name || "";
-          checkBtn();
+      fileInput.onchange = () => {
+        const name = fileInput.files[0] ? fileInput.files[0].name : "";
+        document.getElementById("fileName").textContent = name;
+        document.getElementById("fileLabel").textContent = "✅ Файл выбран";
+        checkForm();
       };
-      notify.onchange = checkBtn;
 
-      function checkBtn() {
-          sentBtn.disabled = !(receipt.files.length > 0 && notify.checked);
+      notify.onchange = checkForm;
+
+      function checkForm() {
+        if (fileInput.files.length > 0 && notify.checked) {
+          sentBtn.disabled = false;
+          sentBtn.style.opacity = "1";
+        } else {
+          sentBtn.disabled = true;
+          sentBtn.style.opacity = "0.5";
+        }
       }
 
       sentBtn.onclick = async () => {
-          sentBtn.disabled = true;
-          document.getElementById("resultMsg").textContent = "Отправка подтверждения...";
+        sentBtn.disabled = true;
+        document.getElementById("resultMsg").textContent = "Отправка данных...";
 
-          // В реальной версии здесь будет загрузка файла в Storage. 
-          // Сейчас просто обновляем статус в базе.
-          const { error } = await window.sb.from('profiles').update({ 
-              status: 'candidate_waiting' 
-          }).eq('user_id', uid).eq('line', line);
-
-          if (!error) {
-              location.href = "warning.html?line=" + line;
-          } else {
-              alert("Ошибка сохранения. Попробуйте снова.");
-              sentBtn.disabled = false;
-          }
+        const { error } = await window.sb.from('profiles').update({ status: 'candidate_waiting' }).eq('user_id', uid).eq('line', line);
+        if (!error) {
+          location.href = "warning.html?line=" + line;
+        } else {
+          alert("Ошибка БД. Проверьте интернет.");
+          sentBtn.disabled = false;
+        }
       };
 
       document.getElementById("copyBtn").onclick = () => {
-          navigator.clipboard.writeText(document.getElementById("toCard").textContent);
-          alert("Карта скопирована!");
+        const cardText = document.getElementById("toCard").textContent;
+        navigator.clipboard.writeText(cardText);
+        alert("Номер карты скопирован!");
       };
     });
   </script>
 </body>
 </html>
-
